@@ -6,7 +6,7 @@ export class AuditLog {
   @PrimaryColumn('char', { length: 36 })
   id: string;
 
-  @Column({ name: 'user_id', nullable: true })
+  @Column({ type: 'char', name: 'user_id', nullable: true, length: 36 })
   userId: string | null;
 
   @Column({ length: 100 })
@@ -15,7 +15,7 @@ export class AuditLog {
   @Column({ name: 'entity_type', length: 50 })
   entityType: string;
 
-  @Column({ name: 'entity_id', nullable: true })
+  @Column({ type: 'char', name: 'entity_id', nullable: true, length: 36 })
   entityId: string | null;
 
   @Column({ name: 'old_values', type: 'json', nullable: true })
@@ -24,7 +24,7 @@ export class AuditLog {
   @Column({ name: 'new_values', type: 'json', nullable: true })
   newValues: any;
 
-  @Column({ name: 'ip_address', nullable: true, length: 45 })
+  @Column({ type: 'varchar', name: 'ip_address', nullable: true, length: 45 })
   ipAddress: string | null;
 
   @Column({ name: 'user_agent', type: 'text', nullable: true })

@@ -16,10 +16,10 @@ export class ArtistMedia {
   @Column({ length: 500 })
   url: string;
 
-  @Column({ name: 'thumbnail_url', nullable: true, length: 500 })
+  @Column({ type: 'varchar', name: 'thumbnail_url', nullable: true, length: 500 })
   thumbnailUrl: string | null;
 
-  @Column({ nullable: true, length: 200 })
+  @Column({ type: 'varchar', nullable: true, length: 200 })
   title: string | null;
 
   @Column({ name: 'sort_order', default: 0 })

@@ -20,7 +20,7 @@ export class Booking extends BaseEntity {
   })
   status: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'int', nullable: true })
   score: number | null;
 
   @Column({ name: 'score_breakdown', type: 'json', nullable: true })
@@ -32,10 +32,10 @@ export class Booking extends BaseEntity {
   @Column({ name: 'requester_email' })
   requesterEmail: string;
 
-  @Column({ name: 'requester_phone', nullable: true, length: 50 })
+  @Column({ type: 'varchar', name: 'requester_phone', nullable: true, length: 50 })
   requesterPhone: string | null;
 
-  @Column({ name: 'requester_company', nullable: true, length: 200 })
+  @Column({ type: 'varchar', name: 'requester_company', nullable: true, length: 200 })
   requesterCompany: string | null;
 
   @Column({ name: 'event_name', length: 200 })
@@ -47,7 +47,7 @@ export class Booking extends BaseEntity {
   @Column({ name: 'event_date_flexible', default: false })
   eventDateFlexible: boolean;
 
-  @Column({ name: 'event_venue', nullable: true, length: 200 })
+  @Column({ type: 'varchar', name: 'event_venue', nullable: true, length: 200 })
   eventVenue: string | null;
 
   @Column({ name: 'event_city', length: 100 })
@@ -59,7 +59,7 @@ export class Booking extends BaseEntity {
   @Column({ name: 'event_type', type: 'enum', enum: ['festival', 'club', 'private', 'corporate', 'other'] })
   eventType: string;
 
-  @Column({ name: 'expected_attendance', nullable: true })
+  @Column({ type: 'int', name: 'expected_attendance', nullable: true })
   expectedAttendance: number | null;
 
   @Column({ name: 'budget_min', type: 'decimal', precision: 10, scale: 2, nullable: true })
@@ -86,25 +86,25 @@ export class Booking extends BaseEntity {
   @Column({ name: 'quoted_amount', type: 'decimal', precision: 10, scale: 2, nullable: true })
   quotedAmount: number | null;
 
-  @Column({ name: 'quote_pdf_url', nullable: true, length: 500 })
+  @Column({ type: 'varchar', name: 'quote_pdf_url', nullable: true, length: 500 })
   quotePdfUrl: string | null;
 
-  @Column({ name: 'quote_sent_at', nullable: true })
+  @Column({ type: 'datetime', name: 'quote_sent_at', nullable: true })
   quoteSentAt: Date | null;
 
   @Column({ name: 'digital_signature', type: 'text', nullable: true })
   digitalSignature: string | null;
 
-  @Column({ name: 'signed_at', nullable: true })
+  @Column({ type: 'datetime', name: 'signed_at', nullable: true })
   signedAt: Date | null;
 
-  @Column({ name: 'assigned_to', nullable: true })
+  @Column({ type: 'char', name: 'assigned_to', nullable: true, length: 36 })
   assignedTo: string | null;
 
-  @Column({ name: 'source_ip', nullable: true, length: 45 })
+  @Column({ type: 'varchar', name: 'source_ip', nullable: true, length: 45 })
   sourceIp: string | null;
 
-  @Column({ name: 'source_country', nullable: true, length: 3 })
+  @Column({ type: 'varchar', name: 'source_country', nullable: true, length: 3 })
   sourceCountry: string | null;
 
   @ManyToOne(() => Artist)

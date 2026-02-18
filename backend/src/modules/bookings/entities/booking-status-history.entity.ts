@@ -11,13 +11,13 @@ export class BookingStatusHistory {
   @Column({ name: 'booking_id' })
   bookingId: string;
 
-  @Column({ name: 'from_status', nullable: true, length: 50 })
+  @Column({ type: 'varchar', name: 'from_status', nullable: true, length: 50 })
   fromStatus: string | null;
 
   @Column({ name: 'to_status', length: 50 })
   toStatus: string;
 
-  @Column({ name: 'changed_by', nullable: true })
+  @Column({ type: 'char', name: 'changed_by', nullable: true, length: 36 })
   changedBy: string | null;
 
   @Column({ type: 'text', nullable: true })

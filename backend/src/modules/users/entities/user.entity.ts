@@ -20,34 +20,34 @@ export class User extends BaseEntity {
   @Column({ type: 'enum', enum: ['admin', 'manager'], default: 'manager' })
   role: 'admin' | 'manager';
 
-  @Column({ name: 'avatar_url', nullable: true, length: 500 })
+  @Column({ type: 'varchar', name: 'avatar_url', nullable: true, length: 500 })
   avatarUrl: string | null;
 
   @Column({ name: 'is_active', default: true })
   isActive: boolean;
 
-  @Column({ name: 'two_factor_secret', nullable: true })
+  @Column({ type: 'varchar', name: 'two_factor_secret', nullable: true })
   @Exclude()
   twoFactorSecret: string | null;
 
   @Column({ name: 'two_factor_enabled', default: false })
   twoFactorEnabled: boolean;
 
-  @Column({ name: 'last_login_at', nullable: true })
+  @Column({ type: 'datetime', name: 'last_login_at', nullable: true })
   lastLoginAt: Date | null;
 
-  @Column({ name: 'last_login_ip', nullable: true, length: 45 })
+  @Column({ type: 'varchar', name: 'last_login_ip', nullable: true, length: 45 })
   lastLoginIp: string | null;
 
-  @Column({ name: 'refresh_token_hash', nullable: true })
+  @Column({ type: 'text', name: 'refresh_token_hash', nullable: true })
   @Exclude()
   refreshTokenHash: string | null;
 
-  @Column({ name: 'password_reset_token', nullable: true })
+  @Column({ type: 'varchar', name: 'password_reset_token', nullable: true })
   @Exclude()
   passwordResetToken: string | null;
 
-  @Column({ name: 'password_reset_expires', nullable: true })
+  @Column({ type: 'datetime', name: 'password_reset_expires', nullable: true })
   passwordResetExpires: Date | null;
 
   get fullName(): string {

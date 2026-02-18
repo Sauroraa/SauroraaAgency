@@ -19,16 +19,16 @@ export class PresskitAccessLog {
   @Column({ type: 'enum', enum: ['view', 'download', 'section_view'] })
   action: 'view' | 'download' | 'section_view';
 
-  @Column({ name: 'section_id', nullable: true, length: 100 })
+  @Column({ type: 'varchar', name: 'section_id', nullable: true, length: 100 })
   sectionId: string | null;
 
-  @Column({ name: 'duration_seconds', nullable: true })
+  @Column({ type: 'int', name: 'duration_seconds', nullable: true })
   durationSeconds: number | null;
 
-  @Column({ nullable: true, length: 3 })
+  @Column({ type: 'varchar', nullable: true, length: 3 })
   country: string | null;
 
-  @Column({ nullable: true, length: 100 })
+  @Column({ type: 'varchar', nullable: true, length: 100 })
   city: string | null;
 
   @CreateDateColumn({ name: 'created_at' })

@@ -12,10 +12,10 @@ export class Artist extends BaseEntity {
   @Column({ length: 200 })
   name: string;
 
-  @Column({ name: 'real_name', nullable: true, length: 200 })
+  @Column({ type: 'varchar', name: 'real_name', nullable: true, length: 200 })
   realName: string | null;
 
-  @Column({ name: 'bio_short', nullable: true, length: 500 })
+  @Column({ type: 'varchar', name: 'bio_short', nullable: true, length: 500 })
   bioShort: string | null;
 
   @Column({ name: 'bio_full', type: 'text', nullable: true })
@@ -24,7 +24,7 @@ export class Artist extends BaseEntity {
   @Column({ length: 3, default: 'BEL' })
   country: string;
 
-  @Column({ nullable: true, length: 100 })
+  @Column({ type: 'varchar', nullable: true, length: 100 })
   city: string | null;
 
   @Column({ type: 'enum', enum: ['available', 'limited', 'unavailable'], default: 'available' })
@@ -39,28 +39,28 @@ export class Artist extends BaseEntity {
   @Column({ name: 'is_curated', default: false })
   isCurated: boolean;
 
-  @Column({ name: 'profile_image_url', nullable: true, length: 500 })
+  @Column({ type: 'varchar', name: 'profile_image_url', nullable: true, length: 500 })
   profileImageUrl: string | null;
 
-  @Column({ name: 'cover_image_url', nullable: true, length: 500 })
+  @Column({ type: 'varchar', name: 'cover_image_url', nullable: true, length: 500 })
   coverImageUrl: string | null;
 
-  @Column({ name: 'spotify_url', nullable: true, length: 500 })
+  @Column({ type: 'varchar', name: 'spotify_url', nullable: true, length: 500 })
   spotifyUrl: string | null;
 
-  @Column({ name: 'soundcloud_url', nullable: true, length: 500 })
+  @Column({ type: 'varchar', name: 'soundcloud_url', nullable: true, length: 500 })
   soundcloudUrl: string | null;
 
-  @Column({ name: 'instagram_url', nullable: true, length: 500 })
+  @Column({ type: 'varchar', name: 'instagram_url', nullable: true, length: 500 })
   instagramUrl: string | null;
 
-  @Column({ name: 'facebook_url', nullable: true, length: 500 })
+  @Column({ type: 'varchar', name: 'facebook_url', nullable: true, length: 500 })
   facebookUrl: string | null;
 
-  @Column({ name: 'website_url', nullable: true, length: 500 })
+  @Column({ type: 'varchar', name: 'website_url', nullable: true, length: 500 })
   websiteUrl: string | null;
 
-  @Column({ name: 'monthly_listeners', nullable: true })
+  @Column({ type: 'int', name: 'monthly_listeners', nullable: true })
   monthlyListeners: number | null;
 
   @Column({ name: 'base_fee_min', type: 'decimal', precision: 10, scale: 2, nullable: true })
@@ -69,13 +69,13 @@ export class Artist extends BaseEntity {
   @Column({ name: 'base_fee_max', type: 'decimal', precision: 10, scale: 2, nullable: true })
   baseFeeMax: number | null;
 
-  @Column({ name: 'manager_id', nullable: true })
+  @Column({ type: 'char', name: 'manager_id', nullable: true, length: 36 })
   managerId: string | null;
 
-  @Column({ name: 'meta_title', nullable: true, length: 200 })
+  @Column({ type: 'varchar', name: 'meta_title', nullable: true, length: 200 })
   metaTitle: string | null;
 
-  @Column({ name: 'meta_description', nullable: true, length: 500 })
+  @Column({ type: 'varchar', name: 'meta_description', nullable: true, length: 500 })
   metaDescription: string | null;
 
   @ManyToOne(() => User, { nullable: true })

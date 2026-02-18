@@ -19,13 +19,13 @@ export class FileEntity extends BaseEntity {
   @Column({ name: 'object_key', length: 500 })
   objectKey: string;
 
-  @Column({ name: 'uploaded_by', nullable: true })
+  @Column({ type: 'char', name: 'uploaded_by', nullable: true, length: 36 })
   uploadedBy: string | null;
 
-  @Column({ name: 'entity_type', nullable: true, length: 50 })
+  @Column({ type: 'varchar', name: 'entity_type', nullable: true, length: 50 })
   entityType: string | null;
 
-  @Column({ name: 'entity_id', nullable: true })
+  @Column({ type: 'char', name: 'entity_id', nullable: true, length: 36 })
   entityId: string | null;
 
   @ManyToOne(() => User, { nullable: true })

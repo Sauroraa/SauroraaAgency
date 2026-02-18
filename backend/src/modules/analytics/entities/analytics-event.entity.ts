@@ -9,31 +9,31 @@ export class AnalyticsEvent {
   @Column({ name: 'event_type', length: 100 })
   eventType: string;
 
-  @Column({ name: 'entity_type', nullable: true, length: 50 })
+  @Column({ type: 'varchar', name: 'entity_type', nullable: true, length: 50 })
   entityType: string | null;
 
-  @Column({ name: 'entity_id', nullable: true })
+  @Column({ type: 'char', name: 'entity_id', nullable: true, length: 36 })
   entityId: string | null;
 
-  @Column({ name: 'user_id', nullable: true })
+  @Column({ type: 'char', name: 'user_id', nullable: true, length: 36 })
   userId: string | null;
 
-  @Column({ name: 'session_id', nullable: true, length: 100 })
+  @Column({ type: 'varchar', name: 'session_id', nullable: true, length: 100 })
   sessionId: string | null;
 
-  @Column({ name: 'ip_address', nullable: true, length: 45 })
+  @Column({ type: 'varchar', name: 'ip_address', nullable: true, length: 45 })
   ipAddress: string | null;
 
-  @Column({ nullable: true, length: 3 })
+  @Column({ type: 'varchar', nullable: true, length: 3 })
   country: string | null;
 
-  @Column({ nullable: true, length: 100 })
+  @Column({ type: 'varchar', nullable: true, length: 100 })
   city: string | null;
 
   @Column({ name: 'user_agent', type: 'text', nullable: true })
   userAgent: string | null;
 
-  @Column({ nullable: true, length: 500 })
+  @Column({ type: 'varchar', nullable: true, length: 500 })
   referrer: string | null;
 
   @Column({ type: 'json', nullable: true })

@@ -14,16 +14,16 @@ export class PresskitLink {
   @Column({ length: 2000 })
   token: string;
 
-  @Column({ name: 'recipient_email', nullable: true })
+  @Column({ type: 'varchar', name: 'recipient_email', nullable: true, length: 255 })
   recipientEmail: string | null;
 
-  @Column({ name: 'recipient_name', nullable: true, length: 200 })
+  @Column({ type: 'varchar', name: 'recipient_name', nullable: true, length: 200 })
   recipientName: string | null;
 
-  @Column({ name: 'expires_at', nullable: true })
+  @Column({ type: 'datetime', name: 'expires_at', nullable: true })
   expiresAt: Date | null;
 
-  @Column({ name: 'max_views', nullable: true })
+  @Column({ type: 'int', name: 'max_views', nullable: true })
   maxViews: number | null;
 
   @Column({ name: 'current_views', default: 0 })
@@ -32,7 +32,7 @@ export class PresskitLink {
   @Column({ name: 'allow_download', default: true })
   allowDownload: boolean;
 
-  @Column({ name: 'watermark_text', nullable: true, length: 200 })
+  @Column({ type: 'varchar', name: 'watermark_text', nullable: true, length: 200 })
   watermarkText: string | null;
 
   @Column({ name: 'is_revoked', default: false })

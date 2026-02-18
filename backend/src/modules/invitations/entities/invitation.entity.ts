@@ -19,7 +19,7 @@ export class Invitation extends BaseEntity {
   @Column({ name: 'expires_at' })
   expiresAt: Date;
 
-  @Column({ name: 'accepted_at', nullable: true })
+  @Column({ type: 'datetime', name: 'accepted_at', nullable: true })
   acceptedAt: Date | null;
 
   @ManyToOne(() => User)
