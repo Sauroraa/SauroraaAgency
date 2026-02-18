@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
+import { motion } from 'framer-motion';
 import { ArrowRight, Send } from 'lucide-react';
 import { PublicNav } from '@/components/layout/PublicNav';
 import { PublicFooter } from '@/components/layout/PublicFooter';
@@ -83,6 +84,51 @@ export default function HomePage() {
         <HeroSection />
         <FeaturedArtists />
         <StatsCounter />
+        <section className="max-w-7xl mx-auto px-6 pb-8">
+          <div className="rounded-3xl border border-aurora-cyan/20 bg-dark-900/40 backdrop-blur overflow-hidden">
+            <div className="grid grid-cols-1 lg:grid-cols-2">
+              <div className="p-8 md:p-10 border-b lg:border-b-0 lg:border-r border-[var(--border-color)]">
+                <p className="text-sm uppercase tracking-[0.2em] text-aurora-cyan mb-3 font-mono">SAURORAA LEGAL</p>
+                <h2 className="font-display text-3xl md:text-4xl font-bold mb-4">SAURORAA SNC</h2>
+                <p className="text-[var(--text-secondary)] mb-6">
+                  N° 1031.598.463 · Région de Liège · Belgique
+                </p>
+                <div className="space-y-2 text-sm text-[var(--text-secondary)]">
+                  <p>booking@sauroraa.be</p>
+                  <p>contact@sauroraa.be</p>
+                </div>
+                <div className="mt-6 flex flex-wrap gap-3">
+                  <Link href="/mentions-legales" className="text-sm text-aurora-cyan hover:opacity-80 transition-opacity">
+                    Voir les mentions légales
+                  </Link>
+                  <Link href="/contact" className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
+                    Contact pro
+                  </Link>
+                </div>
+              </div>
+              <div className="p-8 md:p-10 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {[
+                  { label: 'Structure', value: 'SNC' },
+                  { label: 'Numéro', value: '1031.598.463' },
+                  { label: 'Zone', value: 'Liège' },
+                  { label: 'Bookings', value: 'Direct + Agency' },
+                ].map((item, index) => (
+                  <motion.div
+                    key={item.label}
+                    initial={{ opacity: 0, y: 16 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.35, delay: index * 0.06 }}
+                    className="rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] p-4"
+                  >
+                    <p className="text-xs uppercase tracking-wider text-[var(--text-muted)] mb-2">{item.label}</p>
+                    <p className="font-display text-xl font-semibold">{item.value}</p>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
 
         <section className="max-w-7xl mx-auto px-6 py-20">
           <div className="flex items-end justify-between mb-8">

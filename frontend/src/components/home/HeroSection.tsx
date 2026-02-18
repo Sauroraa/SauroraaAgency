@@ -97,7 +97,7 @@ export function HeroSection() {
               {t.home.discoverArtists}
             </Button>
           </Link>
-          <Link href="/contact">
+          <Link href="/#book-now">
             <Button variant="secondary" size="lg">
               {t.home.bookNow}
             </Button>
