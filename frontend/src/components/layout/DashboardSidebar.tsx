@@ -9,31 +9,31 @@ import {
 import { cn } from '@/lib/cn';
 import { useAuthStore } from '@/stores/authStore';
 import { api } from '@/lib/api';
-
-const adminLinks = [
-  { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { href: '/dashboard/artists', icon: Music, label: 'Artists' },
-  { href: '/dashboard/presskits', icon: FileText, label: 'Presskits' },
-  { href: '/dashboard/bookings', icon: Calendar, label: 'Bookings' },
-  { href: '/dashboard/analytics', icon: BarChart3, label: 'Analytics' },
-  { href: '/dashboard/managers', icon: Users, label: 'Managers' },
-  { href: '/dashboard/invitations', icon: Mail, label: 'Invitations' },
-  { href: '/dashboard/security', icon: Shield, label: 'Security' },
-  { href: '/dashboard/settings', icon: Settings, label: 'Settings' },
-];
-
-const managerLinks = [
-  { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { href: '/dashboard/artists', icon: Music, label: 'My Artists' },
-  { href: '/dashboard/presskits', icon: FileText, label: 'Presskits' },
-  { href: '/dashboard/bookings', icon: Calendar, label: 'Bookings' },
-  { href: '/dashboard/analytics', icon: BarChart3, label: 'Analytics' },
-  { href: '/dashboard/settings', icon: Settings, label: 'Settings' },
-];
+import { useI18n } from '@/hooks/useI18n';
 
 export function DashboardSidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => void }) {
   const pathname = usePathname();
   const { user, logout } = useAuthStore();
+  const { t } = useI18n();
+  const adminLinks = [
+    { href: '/dashboard', icon: LayoutDashboard, label: t.dashboard.dashboard },
+    { href: '/dashboard/artists', icon: Music, label: t.dashboard.artists },
+    { href: '/dashboard/presskits', icon: FileText, label: t.dashboard.presskits },
+    { href: '/dashboard/bookings', icon: Calendar, label: t.dashboard.bookings },
+    { href: '/dashboard/analytics', icon: BarChart3, label: t.dashboard.analytics },
+    { href: '/dashboard/managers', icon: Users, label: t.dashboard.managers },
+    { href: '/dashboard/invitations', icon: Mail, label: t.dashboard.invitations },
+    { href: '/dashboard/security', icon: Shield, label: t.dashboard.security },
+    { href: '/dashboard/settings', icon: Settings, label: t.dashboard.settings },
+  ];
+  const managerLinks = [
+    { href: '/dashboard', icon: LayoutDashboard, label: t.dashboard.dashboard },
+    { href: '/dashboard/artists', icon: Music, label: t.dashboard.myArtists },
+    { href: '/dashboard/presskits', icon: FileText, label: t.dashboard.presskits },
+    { href: '/dashboard/bookings', icon: Calendar, label: t.dashboard.bookings },
+    { href: '/dashboard/analytics', icon: BarChart3, label: t.dashboard.analytics },
+    { href: '/dashboard/settings', icon: Settings, label: t.dashboard.settings },
+  ];
   const links = user?.role === 'admin' ? adminLinks : managerLinks;
 
   const handleLogout = async () => {
@@ -92,7 +92,7 @@ export function DashboardSidebar({ collapsed, onToggle }: { collapsed: boolean; 
           className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-red-400 hover:bg-red-500/10 w-full transition-colors"
         >
           <LogOut size={18} />
-          {!collapsed && <span>Logout</span>}
+          {!collapsed && <span>{t.dashboard.logout}</span>}
         </button>
       </div>
     </aside>

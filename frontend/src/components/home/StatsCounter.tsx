@@ -2,6 +2,7 @@
 
 import { motion, useInView } from 'framer-motion';
 import { useRef, useEffect, useState } from 'react';
+import { useI18n } from '@/hooks/useI18n';
 
 function AnimatedNumber({ target, suffix = '' }: { target: number; suffix?: string }) {
   const [count, setCount] = useState(0);
@@ -25,14 +26,15 @@ function AnimatedNumber({ target, suffix = '' }: { target: number; suffix?: stri
   return <span ref={ref}>{count}{suffix}</span>;
 }
 
-const stats = [
-  { label: 'Artists', value: 50, suffix: '+' },
-  { label: 'Events Booked', value: 500, suffix: '+' },
-  { label: 'Countries', value: 25, suffix: '' },
-  { label: 'Years Active', value: 5, suffix: '' },
-];
-
 export function StatsCounter() {
+  const { t } = useI18n();
+  const stats = [
+    { label: t.home.statsArtists, value: 50, suffix: '+' },
+    { label: t.home.statsEvents, value: 500, suffix: '+' },
+    { label: t.home.statsCountries, value: 25, suffix: '' },
+    { label: t.home.statsYears, value: 5, suffix: '' },
+  ];
+
   return (
     <section className="py-24 px-6 border-t border-[var(--border-color)]">
       <div className="max-w-7xl mx-auto">

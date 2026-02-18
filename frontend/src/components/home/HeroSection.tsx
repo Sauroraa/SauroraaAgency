@@ -5,10 +5,12 @@ import Link from 'next/link';
 import { useRef, useState } from 'react';
 import { ArrowDown, Volume2, VolumeX } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { useI18n } from '@/hooks/useI18n';
 
 export function HeroSection() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [soundOn, setSoundOn] = useState(false);
+  const { t } = useI18n();
 
   const toggleSound = async () => {
     if (!audioRef.current) return;
@@ -48,7 +50,7 @@ export function HeroSection() {
         className="absolute right-6 top-24 z-20 inline-flex items-center gap-2 rounded-full border border-white/20 bg-dark-900/50 px-3 py-1.5 text-xs text-white/80 backdrop-blur hover:text-aurora-cyan"
       >
         {soundOn ? <Volume2 size={14} /> : <VolumeX size={14} />}
-        {soundOn ? 'Ambient On' : 'Ambient Off'}
+        {soundOn ? t.home.ambientOn : t.home.ambientOff}
       </button>
 
       <div className="relative z-10 text-center max-w-5xl mx-auto px-6">
@@ -58,7 +60,7 @@ export function HeroSection() {
           transition={{ duration: 0.8, ease: [0.19, 1, 0.22, 1] }}
         >
           <p className="text-sm uppercase tracking-[0.3em] text-aurora-cyan mb-6 font-mono">
-            Premium Artist Management
+            {t.home.heroTag}
           </p>
         </motion.div>
 
@@ -81,8 +83,7 @@ export function HeroSection() {
           transition={{ duration: 0.8, delay: 0.35 }}
           className="text-lg md:text-xl text-[var(--text-secondary)] max-w-2xl mx-auto mb-12 leading-relaxed"
         >
-          We curate exceptional electronic music talent and craft unforgettable
-          experiences. From intimate club nights to global festivals.
+          {t.home.heroSubtitle}
         </motion.p>
 
         <motion.div
@@ -93,12 +94,12 @@ export function HeroSection() {
         >
           <Link href="/artists">
             <Button size="lg">
-              Discover Artists
+              {t.home.discoverArtists}
             </Button>
           </Link>
           <Link href="/contact">
             <Button variant="secondary" size="lg">
-              Book Now
+              {t.home.bookNow}
             </Button>
           </Link>
         </motion.div>

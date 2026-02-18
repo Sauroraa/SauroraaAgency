@@ -7,8 +7,10 @@ import { ArrowRight } from 'lucide-react';
 import { staggerContainer, staggerItem } from '@/lib/motion';
 import { publicApi } from '@/lib/api';
 import type { Artist } from '@/types/artist';
+import { useI18n } from '@/hooks/useI18n';
 
 export function FeaturedArtists() {
+  const { t } = useI18n();
   const { data } = useQuery<Artist[]>({
     queryKey: ['featured-artists-home'],
     queryFn: async () => {
@@ -28,14 +30,14 @@ export function FeaturedArtists() {
           className="flex items-end justify-between mb-16"
         >
           <div>
-            <p className="text-sm uppercase tracking-[0.2em] text-aurora-cyan mb-3 font-mono">Featured</p>
-            <h2 className="font-display text-4xl md:text-5xl font-bold">Our Artists</h2>
+            <p className="text-sm uppercase tracking-[0.2em] text-aurora-cyan mb-3 font-mono">{t.home.featuredTag}</p>
+            <h2 className="font-display text-4xl md:text-5xl font-bold">{t.home.featuredTitle}</h2>
           </div>
           <Link
             href="/artists"
             className="hidden md:flex items-center gap-2 text-sm text-[var(--text-secondary)] hover:text-aurora-cyan transition-colors"
           >
-            View All <ArrowRight size={16} />
+            {t.home.viewAll} <ArrowRight size={16} />
           </Link>
         </motion.div>
 
@@ -70,12 +72,12 @@ export function FeaturedArtists() {
         </motion.div>
 
         {!artists.length && (
-          <div className="text-center text-sm text-[var(--text-muted)]">No featured artists yet.</div>
+          <div className="text-center text-sm text-[var(--text-muted)]">{t.home.noFeatured}</div>
         )}
 
         <div className="md:hidden mt-8 text-center">
           <Link href="/artists" className="text-aurora-cyan text-sm flex items-center justify-center gap-2">
-            View All Artists <ArrowRight size={16} />
+            {t.home.viewAllArtists} <ArrowRight size={16} />
           </Link>
         </div>
       </div>

@@ -5,6 +5,8 @@ import { useState, useEffect } from 'react';
 import { useThemeStore } from '@/stores/themeStore';
 import { api } from '@/lib/api';
 import { useAuthStore } from '@/stores/authStore';
+import { useLocaleStore } from '@/stores/localeStore';
+import type { Locale } from '@/lib/i18n';
 
 function ThemeInitializer() {
   const setTheme = useThemeStore((s) => s.setTheme);
@@ -38,6 +40,21 @@ function AuthInitializer() {
   return null;
 }
 
+function LocaleInitializer() {
+  const setLocale = useLocaleStore((s) => s.setLocale);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('sauroraa-locale') as Locale | null;
+    if (saved === 'fr' || saved === 'en' || saved === 'nl') {
+      setLocale(saved);
+      return;
+    }
+    setLocale('fr');
+  }, [setLocale]);
+
+  return null;
+}
+
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(() => new QueryClient({
     defaultOptions: {
@@ -48,6 +65,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeInitializer />
+      <LocaleInitializer />
       <AuthInitializer />
       {children}
     </QueryClientProvider>

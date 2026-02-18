@@ -10,11 +10,13 @@ import { Input } from '@/components/ui/Input';
 import { useAuthStore } from '@/stores/authStore';
 import { useToastStore } from '@/stores/toastStore';
 import { publicApi } from '@/lib/api';
+import { useI18n } from '@/hooks/useI18n';
 
 export default function LoginPage() {
   const router = useRouter();
   const setAuth = useAuthStore((s) => s.setAuth);
   const addToast = useToastStore((s) => s.addToast);
+  const { t } = useI18n();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -34,10 +36,10 @@ export default function LoginPage() {
       }
 
       setAuth(result.user, result.accessToken, result.refreshToken);
-      addToast('success', `Welcome back, ${result.user.firstName}!`);
+      addToast('success', `${t.auth.welcomeBack}, ${result.user.firstName}!`);
       router.push('/dashboard');
     } catch {
-      addToast('error', 'Invalid credentials. Please try again.');
+      addToast('error', t.auth.invalidCredentials);
     } finally {
       setIsLoading(false);
     }
@@ -51,15 +53,15 @@ export default function LoginPage() {
     >
       <div className="text-center mb-8">
         <Link href="/" className="font-display text-3xl font-bold text-aurora">SAURORAA</Link>
-        <p className="text-sm text-[var(--text-muted)] mt-2">Agency Platform</p>
+        <p className="text-sm text-[var(--text-muted)] mt-2">{t.auth.platform}</p>
       </div>
 
       <div className="rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] p-8">
-        <h2 className="font-display text-xl font-semibold mb-6">Sign In</h2>
+        <h2 className="font-display text-xl font-semibold mb-6">{t.auth.signIn}</h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input
-            label="Email"
+            label={t.auth.email}
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -69,7 +71,7 @@ export default function LoginPage() {
 
           <div className="relative">
             <Input
-              label="Password"
+              label={t.auth.password}
               type={showPassword ? 'text' : 'password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -87,19 +89,19 @@ export default function LoginPage() {
 
           <div className="flex items-center justify-end">
             <Link href="/forgot-password" className="text-xs text-aurora-cyan hover:underline">
-              Forgot password?
+              {t.auth.forgotPassword}
             </Link>
           </div>
 
           <Button type="submit" className="w-full" size="lg" isLoading={isLoading}>
-            <LogIn size={16} /> Sign In
+            <LogIn size={16} /> {t.auth.signIn}
           </Button>
         </form>
       </div>
 
       <p className="text-center text-xs text-[var(--text-muted)] mt-6">
-        Access is by invitation only.{' '}
-        <Link href="/" className="text-aurora-cyan hover:underline">Back to site</Link>
+        {t.auth.invitationOnly}{' '}
+        <Link href="/" className="text-aurora-cyan hover:underline">{t.auth.backToSite}</Link>
       </p>
     </motion.div>
   );

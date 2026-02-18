@@ -5,16 +5,18 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
-
-const navLinks = [
-  { href: '/artists', label: 'Artists' },
-  { href: '/about', label: 'About' },
-  { href: '/curated', label: 'Curated' },
-  { href: '/contact', label: 'Contact' },
-];
+import { LanguageSwitcher } from './LanguageSwitcher';
+import { useI18n } from '@/hooks/useI18n';
 
 export function PublicNav() {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const { t } = useI18n();
+  const navLinks = [
+    { href: '/artists', label: t.nav.artists },
+    { href: '/about', label: t.nav.about },
+    { href: '/curated', label: t.nav.curated },
+    { href: '/contact', label: t.nav.contact },
+  ];
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 glass">
@@ -34,12 +36,13 @@ export function PublicNav() {
               {link.label}
             </Link>
           ))}
+          <LanguageSwitcher />
           <ThemeToggle />
           <Link
             href="/login"
             className="text-sm px-5 py-2 rounded-lg border border-aurora-cyan/30 text-aurora-cyan hover:bg-aurora-cyan/10 transition-all duration-200"
           >
-            Agency
+            {t.nav.agency}
           </Link>
         </div>
 
@@ -73,8 +76,9 @@ export function PublicNav() {
                 </Link>
               ))}
               <div className="pt-4 border-t border-[var(--border-color)] flex items-center justify-between">
+                <LanguageSwitcher />
                 <ThemeToggle />
-                <Link href="/login" className="text-aurora-cyan text-sm">Agency Login</Link>
+                <Link href="/login" className="text-aurora-cyan text-sm">{t.nav.agencyLogin}</Link>
               </div>
             </div>
           </motion.div>

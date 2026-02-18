@@ -41,7 +41,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="fr" suppressHydrationWarning>
       <body className={`${clashDisplay.variable} ${satoshi.variable} ${jetbrains.variable}`}>
         <Providers>
           <CustomCursor />
