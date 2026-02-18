@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Lock, Eye, EyeOff } from 'lucide-react';
@@ -10,7 +11,7 @@ import { Input } from '@/components/ui/Input';
 import { useToastStore } from '@/stores/toastStore';
 import { publicApi } from '@/lib/api';
 
-export default function ResetPasswordPage() {
+function ResetPasswordPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get('token') || '';
@@ -99,5 +100,13 @@ export default function ResetPasswordPage() {
         <Link href="/login" className="text-aurora-cyan hover:underline">Sign in</Link>
       </p>
     </motion.div>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={<div className="w-full max-w-md" />}>
+      <ResetPasswordPageContent />
+    </Suspense>
   );
 }

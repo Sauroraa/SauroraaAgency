@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Shield } from 'lucide-react';
@@ -10,7 +11,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { useToastStore } from '@/stores/toastStore';
 import { publicApi } from '@/lib/api';
 
-export default function Verify2FAPage() {
+function Verify2FAPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const userId = searchParams.get('userId') || '';
@@ -126,5 +127,13 @@ export default function Verify2FAPage() {
         <Link href="/login" className="text-aurora-cyan hover:underline">Back to login</Link>
       </p>
     </motion.div>
+  );
+}
+
+export default function Verify2FAPage() {
+  return (
+    <Suspense fallback={<div className="w-full max-w-md" />}>
+      <Verify2FAPageContent />
+    </Suspense>
   );
 }

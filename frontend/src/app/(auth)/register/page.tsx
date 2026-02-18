@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { UserPlus, Eye, EyeOff } from 'lucide-react';
@@ -11,7 +12,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { useToastStore } from '@/stores/toastStore';
 import { publicApi } from '@/lib/api';
 
-export default function RegisterPage() {
+function RegisterPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get('token') || '';
@@ -102,5 +103,13 @@ export default function RegisterPage() {
         <Link href="/login" className="text-aurora-cyan hover:underline">Sign in</Link>
       </p>
     </motion.div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={<div className="w-full max-w-md" />}>
+      <RegisterPageContent />
+    </Suspense>
   );
 }

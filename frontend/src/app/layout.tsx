@@ -1,28 +1,28 @@
 import type { Metadata } from 'next';
-import localFont from 'next/font/local';
+import { JetBrains_Mono, Manrope, Space_Grotesk } from 'next/font/google';
 import { Providers } from '@/components/layout/Providers';
 import { CustomCursor } from '@/components/effects/CustomCursor';
 import './globals.css';
 
-const clashDisplay = localFont({
-  src: '../../public/fonts/ClashDisplay-Variable.woff2',
+const clashDisplay = Space_Grotesk({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
   variable: '--font-clash-display',
   display: 'swap',
-  fallback: ['system-ui', 'sans-serif'],
 });
 
-const satoshi = localFont({
-  src: '../../public/fonts/Satoshi-Variable.woff2',
+const satoshi = Manrope({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
   variable: '--font-satoshi',
   display: 'swap',
-  fallback: ['system-ui', 'sans-serif'],
 });
 
-const jetbrains = localFont({
-  src: '../../public/fonts/JetBrainsMono-Variable.woff2',
+const jetbrains = JetBrains_Mono({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
   variable: '--font-jetbrains',
   display: 'swap',
-  fallback: ['monospace'],
 });
 
 export const metadata: Metadata = {

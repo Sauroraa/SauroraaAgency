@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { Suspense } from 'react';
 import { motion } from 'framer-motion';
 import { useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
@@ -13,7 +14,7 @@ import { publicApi } from '@/lib/api';
 import { EVENT_TYPES, COUNTRIES } from '@/lib/constants';
 import type { Artist } from '@/types/artist';
 
-export default function ContactPage() {
+function ContactPageContent() {
   const searchParams = useSearchParams();
   const preselectedArtist = searchParams.get('artist');
   const [activeTab, setActiveTab] = useState<'booking' | 'general'>(preselectedArtist ? 'booking' : 'general');
@@ -202,5 +203,13 @@ export default function ContactPage() {
         </Card>
       )}
     </div>
+  );
+}
+
+export default function ContactPage() {
+  return (
+    <Suspense fallback={<div className="max-w-4xl mx-auto px-6 py-24" />}>
+      <ContactPageContent />
+    </Suspense>
   );
 }

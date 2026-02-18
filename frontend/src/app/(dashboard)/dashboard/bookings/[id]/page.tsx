@@ -60,6 +60,7 @@ export default function BookingDetailPage() {
 
   if (isLoading) return <div className="space-y-4"><Skeleton className="h-48" /><Skeleton className="h-96" /></div>;
   if (!booking) return <div>Booking not found</div>;
+  const statusHistory = booking.statusHistory ?? [];
 
   return (
     <div className="space-y-6 max-w-5xl">
@@ -176,11 +177,11 @@ export default function BookingDetailPage() {
             </dl>
           </Card>
 
-          {booking.statusHistory?.length > 0 && (
+          {statusHistory.length > 0 && (
             <Card>
               <h3 className="font-display font-semibold mb-4">History</h3>
               <div className="space-y-3">
-                {booking.statusHistory.map((h) => (
+                {statusHistory.map((h) => (
                   <div key={h.id} className="flex items-start gap-2 text-xs">
                     <div className="w-1.5 h-1.5 rounded-full bg-aurora-cyan mt-1.5 shrink-0" />
                     <div>
