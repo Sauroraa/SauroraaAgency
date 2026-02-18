@@ -20,7 +20,7 @@ export class InvitationsService {
     });
   }
 
-  async create(email: string, role: 'admin' | 'manager', invitedBy: string, inviterName: string): Promise<Invitation> {
+  async create(email: string, role: 'admin' | 'manager' | 'promoter', invitedBy: string, inviterName: string): Promise<Invitation> {
     const existing = await this.invitationRepo.findOne({
       where: { email, acceptedAt: IsNull() },
     });

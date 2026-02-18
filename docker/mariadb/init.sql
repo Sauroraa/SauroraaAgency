@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   `password_hash` VARCHAR(255) NOT NULL,
   `first_name` VARCHAR(100) NOT NULL,
   `last_name` VARCHAR(100) NOT NULL,
-  `role` ENUM('admin', 'manager') NOT NULL DEFAULT 'manager',
+  `role` ENUM('admin', 'manager', 'promoter') NOT NULL DEFAULT 'manager',
   `avatar_url` VARCHAR(500) NULL,
   `is_active` BOOLEAN NOT NULL DEFAULT TRUE,
   `two_factor_secret` VARCHAR(255) NULL,
@@ -240,7 +240,7 @@ CREATE TABLE IF NOT EXISTS `booking_comments` (
 CREATE TABLE IF NOT EXISTS `invitations` (
   `id` CHAR(36) NOT NULL,
   `email` VARCHAR(255) NOT NULL,
-  `role` ENUM('admin', 'manager') NOT NULL DEFAULT 'manager',
+  `role` ENUM('admin', 'manager', 'promoter') NOT NULL DEFAULT 'manager',
   `token` VARCHAR(255) NOT NULL,
   `invited_by` CHAR(36) NOT NULL,
   `expires_at` DATETIME NOT NULL,

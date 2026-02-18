@@ -17,6 +17,38 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   useEffect(() => {
     if (!user && !accessToken && !refreshToken) {
       router.replace('/login');
+      return;
+    }
+
+    if (!user) return;
+
+    const path = window.location.pathname;
+    const isAdmin = user.role === 'admin';
+    const managerAllowed = [
+      '/dashboard',
+      '/dashboard/artists',
+      '/dashboard/presskits',
+      '/dashboard/bookings',
+      '/dashboard/analytics',
+      '/dashboard/settings',
+    ];
+    const promoterAllowed = [
+      '/dashboard',
+      '/dashboard/bookings',
+      '/dashboard/settings',
+    ];
+
+    if (isAdmin) return;
+
+    if (user.role === 'manager') {
+      const allowed = managerAllowed.some((prefix) => path === prefix || path.startsWith(`${prefix}/`));
+      if (!allowed) router.replace('/dashboard');
+      return;
+    }
+
+    if (user.role === 'promoter') {
+      const allowed = promoterAllowed.some((prefix) => path === prefix || path.startsWith(`${prefix}/`));
+      if (!allowed) router.replace('/dashboard');
     }
   }, [user, accessToken, refreshToken, router]);
 

@@ -17,8 +17,8 @@ export class User extends BaseEntity {
   @Column({ name: 'last_name', length: 100 })
   lastName: string;
 
-  @Column({ type: 'enum', enum: ['admin', 'manager'], default: 'manager' })
-  role: 'admin' | 'manager';
+  @Column({ type: 'enum', enum: ['admin', 'manager', 'promoter'], default: 'manager' })
+  role: 'admin' | 'manager' | 'promoter';
 
   @Column({ type: 'varchar', name: 'avatar_url', nullable: true, length: 500 })
   avatarUrl: string | null;

@@ -34,7 +34,18 @@ export function DashboardSidebar({ collapsed, onToggle }: { collapsed: boolean; 
     { href: '/dashboard/analytics', icon: BarChart3, label: t.dashboard.analytics },
     { href: '/dashboard/settings', icon: Settings, label: t.dashboard.settings },
   ];
-  const links = user?.role === 'admin' ? adminLinks : managerLinks;
+  const promoterLinks = [
+    { href: '/dashboard', icon: LayoutDashboard, label: t.dashboard.dashboard },
+    { href: '/dashboard/bookings', icon: Calendar, label: t.dashboard.bookings },
+    { href: '/dashboard/settings', icon: Settings, label: t.dashboard.settings },
+  ];
+
+  const links =
+    user?.role === 'admin'
+      ? adminLinks
+      : user?.role === 'manager'
+        ? managerLinks
+        : promoterLinks;
 
   const handleLogout = async () => {
     try {

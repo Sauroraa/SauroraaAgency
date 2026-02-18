@@ -7,8 +7,8 @@ export class Invitation extends BaseEntity {
   @Column()
   email: string;
 
-  @Column({ type: 'enum', enum: ['admin', 'manager'], default: 'manager' })
-  role: 'admin' | 'manager';
+  @Column({ type: 'enum', enum: ['admin', 'manager', 'promoter'], default: 'manager' })
+  role: 'admin' | 'manager' | 'promoter';
 
   @Column({ unique: true })
   token: string;

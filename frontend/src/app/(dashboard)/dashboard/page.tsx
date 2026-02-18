@@ -32,9 +32,11 @@ function MetricCard({ title, value, icon: Icon, change, trend }: {
 
 export default function DashboardPage() {
   const user = useAuthStore((s) => s.user);
+  const isPromoter = user?.role === 'promoter';
 
   const { data: overview, isLoading } = useQuery({
     queryKey: ['analytics-overview'],
+    enabled: !isPromoter,
     queryFn: async () => {
       const res = await api.get('/analytics/overview');
       return res.data.data || res.data;
@@ -56,12 +58,14 @@ export default function DashboardPage() {
           Welcome back, {user?.firstName || 'Admin'}
         </h1>
         <p className="text-sm text-[var(--text-muted)] mt-1">
-          Here is what is happening with your agency today.
+          {isPromoter
+            ? 'Here is your booking activity overview.'
+            : 'Here is what is happening with your agency today.'}
         </p>
       </div>
 
       {/* Metrics Grid */}
-      {isLoading ? (
+      {!isPromoter && isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {Array.from({ length: 4 }).map((_, i) => (
             <Skeleton key={i} className="h-32 rounded-xl" />
@@ -73,8 +77,8 @@ export default function DashboardPage() {
           animate={{ opacity: 1, y: 0 }}
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
         >
-          <MetricCard title="Total Bookings" value={overview?.totalBookings || 0} icon={Calendar} change="+12% this month" trend="up" />
-          <MetricCard title="New Requests" value={overview?.newBookings || 0} icon={TrendingUp} change="+3 today" trend="up" />
+          <MetricCard title="Total Bookings" value={overview?.totalBookings || recentBookings?.items?.length || 0} icon={Calendar} change="+12% this month" trend="up" />
+          <MetricCard title="New Requests" value={overview?.newBookings || recentBookings?.items?.length || 0} icon={TrendingUp} change="+3 today" trend="up" />
           <MetricCard title="Conversion Rate" value={`${overview?.conversionRate || 0}%`} icon={Users} />
           <MetricCard title="Avg. Budget" value={`${overview?.avgBudget || 0} EUR`} icon={FileText} />
         </motion.div>
