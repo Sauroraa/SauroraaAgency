@@ -108,7 +108,7 @@ export const translations: Record<Locale, Dictionary> = {
       agency: 'Agency',
       login: 'Connexion',
       rights: 'Tous droits réservés.',
-      location: 'Bruxelles, Belgique',
+      location: 'Liège, Belgique',
     },
     home: {
       heroTag: 'Management premium d’artistes',
@@ -199,7 +199,7 @@ export const translations: Record<Locale, Dictionary> = {
       agency: 'Agency',
       login: 'Login',
       rights: 'All rights reserved.',
-      location: 'Brussels, Belgium',
+      location: 'Liège, Belgium',
     },
     home: {
       heroTag: 'Premium artist management',
@@ -290,7 +290,7 @@ export const translations: Record<Locale, Dictionary> = {
       agency: 'Agency',
       login: 'Inloggen',
       rights: 'Alle rechten voorbehouden.',
-      location: 'Brussel, België',
+      location: 'Luik, België',
     },
     home: {
       heroTag: 'Premium artiestenmanagement',
