@@ -37,7 +37,12 @@ export default function LoginPage() {
 
       setAuth(result.user, result.accessToken, result.refreshToken);
       addToast('success', `${t.auth.welcomeBack}, ${result.user.firstName}!`);
-      router.push('/dashboard');
+      router.replace('/dashboard');
+      setTimeout(() => {
+        if (typeof window !== 'undefined' && window.location.pathname.includes('/login')) {
+          window.location.assign('/dashboard');
+        }
+      }, 150);
     } catch {
       addToast('error', t.auth.invalidCredentials);
     } finally {
