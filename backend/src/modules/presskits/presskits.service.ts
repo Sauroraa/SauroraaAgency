@@ -186,7 +186,7 @@ export class PresskitsService {
 
     const doc = new PDFDocument({ size: 'A4', margin: 50 });
     const chunks: Buffer[] = [];
-    doc.on('data', (chunk) => chunks.push(chunk as Buffer));
+    doc.on('data', (chunk: Buffer) => chunks.push(chunk));
     const done = new Promise<Buffer>((resolve, reject) => {
       doc.on('end', () => resolve(Buffer.concat(chunks)));
       doc.on('error', reject);
