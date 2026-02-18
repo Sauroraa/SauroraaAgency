@@ -28,6 +28,11 @@ export class PublicArtistsController {
     return this.artistsService.getAllGenres();
   }
 
+  @Get('stats')
+  getStats() {
+    return this.artistsService.getPublicStats();
+  }
+
   @Get(':slug')
   findBySlug(@Param('slug') slug: string) {
     return this.artistsService.findBySlug(slug);

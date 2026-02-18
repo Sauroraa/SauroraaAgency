@@ -2,7 +2,9 @@
 
 import { motion, useInView } from 'framer-motion';
 import { useRef, useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useI18n } from '@/hooks/useI18n';
+import { publicApi } from '@/lib/api';
 
 function AnimatedNumber({ target, suffix = '' }: { target: number; suffix?: string }) {
   const [count, setCount] = useState(0);
@@ -28,11 +30,25 @@ function AnimatedNumber({ target, suffix = '' }: { target: number; suffix?: stri
 
 export function StatsCounter() {
   const { t } = useI18n();
+
+  const { data } = useQuery({
+    queryKey: ['home-public-stats'],
+    queryFn: async () => {
+      const res = await publicApi.get('/public/artists/stats');
+      return res.data.data || res.data;
+    },
+  });
+
+  const artists = Number(data?.artists ?? 0);
+  const eventsBooked = Number(data?.eventsBooked ?? 0);
+  const countries = Number(data?.countries ?? 0);
+  const yearsActive = Number(data?.yearsActive ?? 0);
+
   const stats = [
-    { label: t.home.statsArtists, value: 50, suffix: '+' },
-    { label: t.home.statsEvents, value: 500, suffix: '+' },
-    { label: t.home.statsCountries, value: 25, suffix: '' },
-    { label: t.home.statsYears, value: 5, suffix: '' },
+    { label: t.home.statsArtists, value: artists, suffix: '' },
+    { label: t.home.statsEvents, value: eventsBooked, suffix: '' },
+    { label: t.home.statsCountries, value: countries, suffix: '' },
+    { label: t.home.statsYears, value: yearsActive, suffix: '' },
   ];
 
   return (

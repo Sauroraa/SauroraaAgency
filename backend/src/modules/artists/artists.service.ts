@@ -5,6 +5,7 @@ import slugify from 'slugify';
 import { Artist } from './entities/artist.entity';
 import { Genre } from './entities/genre.entity';
 import { ArtistMedia } from './entities/artist-media.entity';
+import { Booking } from '@/modules/bookings/entities/booking.entity';
 import { CreateArtistDto } from './dto/create-artist.dto';
 import { FilterArtistsDto } from './dto/filter-artists.dto';
 
@@ -17,6 +18,8 @@ export class ArtistsService {
     private readonly genreRepo: Repository<Genre>,
     @InjectRepository(ArtistMedia)
     private readonly mediaRepo: Repository<ArtistMedia>,
+    @InjectRepository(Booking)
+    private readonly bookingRepo: Repository<Booking>,
   ) {}
 
   async findAllPublic(filters: FilterArtistsDto) {
@@ -160,5 +163,73 @@ export class ArtistsService {
 
   async getAllGenres(): Promise<Genre[]> {
     return this.genreRepo.find({ order: { name: 'ASC' } });
+  }
+
+  async getPublicStats() {
+    const totalArtists = await this.artistRepo.count({
+      where: { isConfidential: false },
+    });
+
+    const eventsBooked = await this.bookingRepo
+      .createQueryBuilder('booking')
+      .innerJoin('booking.artist', 'artist')
+      .where('artist.isConfidential = :conf', { conf: false })
+      .andWhere('booking.status = :status', { status: 'confirmed' })
+      .getCount();
+
+    const artistCountryRows = await this.artistRepo
+      .createQueryBuilder('artist')
+      .select('DISTINCT artist.country', 'country')
+      .where('artist.isConfidential = :conf', { conf: false })
+      .andWhere("artist.country IS NOT NULL AND artist.country != ''")
+      .getRawMany<{ country: string }>();
+
+    const bookingCountryRows = await this.bookingRepo
+      .createQueryBuilder('booking')
+      .innerJoin('booking.artist', 'artist')
+      .select('DISTINCT booking.eventCountry', 'country')
+      .where('artist.isConfidential = :conf', { conf: false })
+      .andWhere('booking.status = :status', { status: 'confirmed' })
+      .andWhere("booking.eventCountry IS NOT NULL AND booking.eventCountry != ''")
+      .getRawMany<{ country: string }>();
+
+    const countrySet = new Set<string>();
+    for (const row of artistCountryRows) countrySet.add(row.country);
+    for (const row of bookingCountryRows) countrySet.add(row.country);
+
+    const oldestArtist = await this.artistRepo
+      .createQueryBuilder('artist')
+      .select('MIN(artist.createdAt)', 'minDate')
+      .where('artist.isConfidential = :conf', { conf: false })
+      .getRawOne<{ minDate: string | null }>();
+
+    const oldestBooking = await this.bookingRepo
+      .createQueryBuilder('booking')
+      .innerJoin('booking.artist', 'artist')
+      .select('MIN(booking.createdAt)', 'minDate')
+      .where('artist.isConfidential = :conf', { conf: false })
+      .andWhere('booking.status = :status', { status: 'confirmed' })
+      .getRawOne<{ minDate: string | null }>();
+
+    const candidateDates = [oldestArtist?.minDate, oldestBooking?.minDate]
+      .filter((d): d is string => Boolean(d))
+      .map((d) => new Date(d))
+      .filter((d) => !Number.isNaN(d.getTime()));
+
+    let yearsActive = 0;
+    if (candidateDates.length > 0) {
+      const oldestDate = new Date(Math.min(...candidateDates.map((d) => d.getTime())));
+      const yearMs = 365.25 * 24 * 60 * 60 * 1000;
+      yearsActive = Math.max(1, Math.floor((Date.now() - oldestDate.getTime()) / yearMs));
+    }
+
+    return {
+      artists: totalArtists,
+      eventsBooked,
+      countries: countrySet.size,
+      yearsActive,
+      artistCountries: artistCountryRows.length,
+      bookingCountries: bookingCountryRows.length,
+    };
   }
 }
