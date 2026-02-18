@@ -1,0 +1,29 @@
+services:
+  mariadb:
+    ports: []
+
+  redis:
+    ports: []
+
+  minio:
+    ports: []
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    volumes: []
+    ports: []
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    volumes: []
+    ports: []
+    environment:
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+      - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
+
+  nginx:
+    restart: unless-stopped
