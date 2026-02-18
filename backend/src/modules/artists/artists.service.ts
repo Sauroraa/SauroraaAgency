@@ -227,7 +227,7 @@ export class ArtistsService {
       artists: totalArtists,
       eventsBooked,
       countries: countrySet.size,
-      yearsActive,
+      yearsActive: 1,
       artistCountries: artistCountryRows.length,
       bookingCountries: bookingCountryRows.length,
     };
