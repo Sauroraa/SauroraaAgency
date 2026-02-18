@@ -15,9 +15,11 @@ interface AuthState {
   accessToken: string | null;
   refreshToken: string | null;
   isAuthenticated: boolean;
+  hasHydrated: boolean;
   setAuth: (user: User, accessToken: string, refreshToken?: string | null) => void;
   setTokens: (accessToken: string, refreshToken?: string | null) => void;
   hydrateUser: (user: User) => void;
+  setHasHydrated: (hydrated: boolean) => void;
   logout: () => void;
 }
 
@@ -28,6 +30,7 @@ export const useAuthStore = create<AuthState>()(
       accessToken: null,
       refreshToken: null,
       isAuthenticated: false,
+      hasHydrated: false,
       setAuth: (user, accessToken, refreshToken = null) =>
         set({ user, accessToken, refreshToken, isAuthenticated: true }),
       setTokens: (accessToken, refreshToken) =>
@@ -37,10 +40,14 @@ export const useAuthStore = create<AuthState>()(
           isAuthenticated: Boolean(state.user),
         })),
       hydrateUser: (user) => set((state) => ({ user, isAuthenticated: Boolean(state.accessToken) })),
+      setHasHydrated: (hydrated) => set({ hasHydrated: hydrated }),
       logout: () => set({ user: null, accessToken: null, refreshToken: null, isAuthenticated: false }),
     }),
     {
       name: 'sauroraa-auth',
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true);
+      },
       partialize: (state) => ({
         user: state.user,
         accessToken: state.accessToken,

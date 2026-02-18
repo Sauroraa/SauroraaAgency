@@ -12,9 +12,11 @@ import { useAuthStore } from '@/stores/authStore';
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
   const router = useRouter();
-  const { user, accessToken, refreshToken } = useAuthStore();
+  const { user, accessToken, refreshToken, hasHydrated } = useAuthStore();
 
   useEffect(() => {
+    if (!hasHydrated) return;
+
     if (!user && !accessToken && !refreshToken) {
       router.replace('/login');
       return;
@@ -50,7 +52,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       const allowed = promoterAllowed.some((prefix) => path === prefix || path.startsWith(`${prefix}/`));
       if (!allowed) router.replace('/dashboard');
     }
-  }, [user, accessToken, refreshToken, router]);
+  }, [user, accessToken, refreshToken, hasHydrated, router]);
+
+  if (!hasHydrated) {
+    return (
+      <div className="min-h-screen bg-[var(--bg-primary)] flex items-center justify-center text-sm text-[var(--text-muted)]">
+        Loading dashboard...
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[var(--bg-primary)]">
