@@ -24,19 +24,19 @@ export class Presskit extends BaseEntity {
   @Column({ name: 'is_event_ready', default: false })
   isEventReady: boolean;
 
-  @Column({ name: 'event_name', nullable: true, length: 200 })
+  @Column({ type: 'varchar', name: 'event_name', nullable: true, length: 200 })
   eventName: string | null;
 
   @Column({ name: 'event_date', type: 'date', nullable: true })
   eventDate: Date | null;
 
-  @Column({ name: 'event_venue', nullable: true, length: 200 })
+  @Column({ type: 'varchar', name: 'event_venue', nullable: true, length: 200 })
   eventVenue: string | null;
 
-  @Column({ name: 'event_city', nullable: true, length: 100 })
+  @Column({ type: 'varchar', name: 'event_city', nullable: true, length: 100 })
   eventCity: string | null;
 
-  @Column({ name: 'event_promoter', nullable: true, length: 200 })
+  @Column({ type: 'varchar', name: 'event_promoter', nullable: true, length: 200 })
   eventPromoter: string | null;
 
   @Column({ type: 'enum', enum: ['draft', 'active', 'expired', 'revoked'], default: 'draft' })
