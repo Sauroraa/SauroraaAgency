@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: 'Helvetica Neue', sans-serif; background: #0a0a0a; color: #e0e0e0; padding: 40px; }
+    .container { max-width: 600px; margin: 0 auto; background: #111; border-radius: 12px; padding: 40px; }
+    .logo { text-align: center; margin-bottom: 30px; }
+    .logo h1 { background: linear-gradient(135deg, #00d4ff, #7b2fbe); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 28px; }
+    h2 { color: #fff; font-size: 22px; }
+    .ref { color: #00d4ff; font-family: monospace; font-size: 18px; }
+    .detail { padding: 8px 0; border-bottom: 1px solid #222; }
+    .label { color: #8a8a8a; font-size: 13px; text-transform: uppercase; }
+    .value { color: #fff; font-size: 15px; margin-top: 4px; }
+    .footer { text-align: center; color: #5c5c5c; font-size: 12px; margin-top: 30px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo"><h1>SAURORAA</h1></div>
+    <h2>Booking Request Received</h2>
+    <p>Thank you for your interest. Your booking request has been registered.</p>
+    <p>Reference: <span class="ref">{{booking.referenceCode}}</span></p>
+    <div class="detail">
+      <div class="label">Event</div>
+      <div class="value">{{booking.eventName}}</div>
+    </div>
+    <div class="detail">
+      <div class="label">Date</div>
+      <div class="value">{{booking.eventDate}}</div>
+    </div>
+    <div class="detail">
+      <div class="label">Location</div>
+      <div class="value">{{booking.eventCity}}, {{booking.eventCountry}}</div>
+    </div>
+    <p>Our team will review your request and get back to you shortly.</p>
+    <div class="footer">
+      <p>&copy; Sauroraa Agency — agency.sauroraa.be</p>
+    </div>
+  </div>
+</body>
+</html>

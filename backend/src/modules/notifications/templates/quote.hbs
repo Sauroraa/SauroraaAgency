@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: 'Helvetica Neue', sans-serif; background: #0a0a0a; color: #e0e0e0; padding: 40px; }
+    .container { max-width: 600px; margin: 0 auto; background: #111; border-radius: 12px; padding: 40px; }
+    .logo h1 { background: linear-gradient(135deg, #00d4ff, #7b2fbe); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 28px; text-align: center; }
+    .amount { font-size: 32px; color: #00d4ff; text-align: center; padding: 20px; }
+    .footer { text-align: center; color: #5c5c5c; font-size: 12px; margin-top: 30px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo"><h1>SAURORAA</h1></div>
+    <h2>Your Quote</h2>
+    <p>Here is the quote for your booking request <strong>{{booking.referenceCode}}</strong>.</p>
+    <div class="amount">{{booking.quotedAmount}} {{booking.budgetCurrency}}</div>
+    <p>Please review and get back to us.</p>
+    <div class="footer"><p>&copy; Sauroraa Agency</p></div>
+  </div>
+</body>
+</html>
