@@ -16,10 +16,35 @@ export class FilesService implements OnModuleInit {
     private readonly fileRepo: Repository<FileEntity>,
     private config: ConfigService,
   ) {
+    const rawEndpoint = String(config.get('MINIO_ENDPOINT', 'minio')).trim();
+    const rawPort = String(config.get('MINIO_PORT', '9000')).trim();
+    let endPoint = rawEndpoint;
+    let port = Number.parseInt(rawPort, 10);
+    let useSSL = String(config.get('MINIO_USE_SSL', 'false')).toLowerCase() === 'true';
+
+    if (rawEndpoint.startsWith('http://') || rawEndpoint.startsWith('https://')) {
+      const parsed = new URL(rawEndpoint);
+      endPoint = parsed.hostname;
+      if (!Number.isFinite(port)) {
+        port = parsed.port ? Number.parseInt(parsed.port, 10) : (parsed.protocol === 'https:' ? 443 : 80);
+      }
+      useSSL = parsed.protocol === 'https:';
+    } else if (rawEndpoint.includes(':')) {
+      const [host, endpointPort] = rawEndpoint.split(':');
+      endPoint = host;
+      if (!Number.isFinite(port) && endpointPort) {
+        port = Number.parseInt(endpointPort, 10);
+      }
+    }
+
+    if (!Number.isFinite(port)) {
+      port = 9000;
+    }
+
     this.minioClient = new Minio.Client({
-      endPoint: config.get('MINIO_ENDPOINT', 'minio'),
-      port: config.get<number>('MINIO_PORT', 9000),
-      useSSL: false,
+      endPoint,
+      port,
+      useSSL,
       accessKey: config.get('MINIO_ACCESS_KEY', ''),
       secretKey: config.get('MINIO_SECRET_KEY', ''),
     });
