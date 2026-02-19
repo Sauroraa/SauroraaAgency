@@ -74,6 +74,12 @@ export default function PresskitViewerPage() {
     }
   };
 
+  const extractUrls = (content: string) =>
+    content
+      .split('\n')
+      .map((line) => line.trim())
+      .filter((line) => /^https?:\/\//i.test(line));
+
   return (
     <div className="max-w-4xl mx-auto px-6 py-12">
       {/* Header */}
@@ -127,9 +133,35 @@ export default function PresskitViewerPage() {
         {sections.map((section: any, index: number) => (
           <section key={section.id || index} onMouseEnter={() => handleSectionView(section.id || `section-${index}`)}>
             <h2 className="font-display text-2xl font-bold mb-4">{section.title || 'Section'}</h2>
-            <div className="text-[var(--text-secondary)] leading-relaxed whitespace-pre-wrap">
-              {section.content || 'No content available.'}
-            </div>
+            {section.type === 'gallery' ? (
+              (() => {
+                const urls = extractUrls(section.content || '');
+                if (!urls.length) return <div className="text-[var(--text-secondary)]">No content available.</div>;
+                return (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {urls.map((url: string) => (
+                      <img key={url} src={url} alt={section.title || 'Gallery image'} className="w-full h-56 object-cover rounded-xl border border-[var(--border-color)]" />
+                    ))}
+                  </div>
+                );
+              })()
+            ) : section.type === 'videos' ? (
+              (() => {
+                const urls = extractUrls(section.content || '');
+                if (!urls.length) return <div className="text-[var(--text-secondary)]">No content available.</div>;
+                return (
+                  <div className="space-y-4">
+                    {urls.map((url: string) => (
+                      <video key={url} src={url} controls className="w-full rounded-xl border border-[var(--border-color)]" />
+                    ))}
+                  </div>
+                );
+              })()
+            ) : (
+              <div className="text-[var(--text-secondary)] leading-relaxed whitespace-pre-wrap">
+                {section.content || 'No content available.'}
+              </div>
+            )}
           </section>
         ))}
 

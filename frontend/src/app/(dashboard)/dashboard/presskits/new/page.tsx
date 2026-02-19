@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Save, Plus, GripVertical, Trash2, Calendar } from 'lucide-react';
+import { ArrowLeft, Save, Plus, GripVertical, Trash2, Calendar, Upload } from 'lucide-react';
 import Link from 'next/link';
 import { api } from '@/lib/api';
 import { Button } from '@/components/ui/Button';
@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/Input';
 import { Card } from '@/components/ui/Card';
 import { useToastStore } from '@/stores/toastStore';
 import type { Artist } from '@/types/artist';
+import { uploadToVps } from '@/lib/fileUpload';
 
 interface Section {
   id: string;
@@ -72,6 +73,7 @@ export default function NewPresskitPage() {
   const [eventName, setEventName] = useState('');
   const [eventDate, setEventDate] = useState('');
   const [eventVenue, setEventVenue] = useState('');
+  const [uploadingSectionId, setUploadingSectionId] = useState<string | null>(null);
 
   const { data: artistsData } = useQuery({
     queryKey: ['admin-artists-select'],
@@ -108,6 +110,24 @@ export default function NewPresskitPage() {
 
   const updateSection = (id: string, field: keyof Section, value: any) =>
     setSections((prev) => prev.map((s) => s.id === id ? { ...s, [field]: value } : s));
+
+  const uploadSectionFile = async (sectionId: string, file?: File) => {
+    if (!file) return;
+    try {
+      setUploadingSectionId(sectionId);
+      const uploaded = await uploadToVps(file, 'presskits', 'presskit_section');
+      setSections((prev) => prev.map((s) => {
+        if (s.id !== sectionId) return s;
+        const nextContent = s.content ? `${s.content}\n${uploaded.url}` : uploaded.url;
+        return { ...s, content: nextContent };
+      }));
+      addToast('success', 'Fichier presskit uploadé');
+    } catch {
+      addToast('error', 'Upload presskit impossible');
+    } finally {
+      setUploadingSectionId(null);
+    }
+  };
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -218,6 +238,19 @@ export default function NewPresskitPage() {
                   placeholder="Section content..."
                   className="w-full px-3 py-2 rounded-lg bg-dark-900 border border-dark-600 text-sm outline-none focus:border-aurora-cyan resize-none"
                 />
+                <div className="mt-2">
+                  <label className="inline-flex items-center gap-2 text-xs text-[var(--text-secondary)] cursor-pointer">
+                    <Upload size={12} />
+                    {uploadingSectionId === section.id ? 'Upload...' : 'Uploader image/vidéo/fichier'}
+                    <input
+                      type="file"
+                      className="hidden"
+                      accept={section.type === 'gallery' ? 'image/*' : section.type === 'videos' ? 'video/*' : '*/*'}
+                      disabled={uploadingSectionId === section.id}
+                      onChange={(e) => uploadSectionFile(section.id, e.target.files?.[0])}
+                    />
+                  </label>
+                </div>
               </div>
             ))}
           </div>

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Save, Plus, Trash2 } from 'lucide-react';
+import { ArrowLeft, Save, Plus, Trash2, Upload } from 'lucide-react';
 import Link from 'next/link';
 import { api } from '@/lib/api';
 import { Button } from '@/components/ui/Button';
@@ -13,6 +13,7 @@ import { Card } from '@/components/ui/Card';
 import { useToastStore } from '@/stores/toastStore';
 import { COUNTRIES } from '@/lib/constants';
 import type { Genre } from '@/types/artist';
+import { uploadToVps } from '@/lib/fileUpload';
 
 const AVAILABILITY_OPTIONS = ['available', 'limited', 'unavailable'] as const;
 const MEDIA_TYPES = ['image', 'video', 'audio'] as const;
@@ -64,6 +65,9 @@ export default function NewArtistPage() {
     createPresskit: false,
   });
   const [selectedGenres, setSelectedGenres] = useState<number[]>([]);
+  const [uploadingProfile, setUploadingProfile] = useState(false);
+  const [uploadingCover, setUploadingCover] = useState(false);
+  const [uploadingMediaIndex, setUploadingMediaIndex] = useState<number | null>(null);
   const [mediaItems, setMediaItems] = useState<ArtistMediaForm[]>([
     { type: 'image', url: '', thumbnailUrl: '', title: '' },
   ]);
@@ -146,6 +150,53 @@ export default function NewArtistPage() {
 
   const updateMediaItem = (index: number, field: keyof ArtistMediaForm, value: string) => {
     setMediaItems((prev) => prev.map((item, i) => (i === index ? { ...item, [field]: value } : item)));
+  };
+
+  const uploadProfileImage = async (file?: File) => {
+    if (!file) return;
+    try {
+      setUploadingProfile(true);
+      const uploaded = await uploadToVps(file, 'artists', 'artist_profile');
+      updateField('profileImageUrl', uploaded.url);
+      addToast('success', 'Image profil uploadée');
+    } catch {
+      addToast('error', 'Upload image profil impossible');
+    } finally {
+      setUploadingProfile(false);
+    }
+  };
+
+  const uploadCoverImage = async (file?: File) => {
+    if (!file) return;
+    try {
+      setUploadingCover(true);
+      const uploaded = await uploadToVps(file, 'artists', 'artist_cover');
+      updateField('coverImageUrl', uploaded.url);
+      addToast('success', 'Image cover uploadée');
+    } catch {
+      addToast('error', 'Upload image cover impossible');
+    } finally {
+      setUploadingCover(false);
+    }
+  };
+
+  const uploadMediaFile = async (index: number, file?: File) => {
+    if (!file) return;
+    try {
+      setUploadingMediaIndex(index);
+      const item = mediaItems[index];
+      const bucket = item.type === 'audio' ? 'presskits' : 'artists';
+      const uploaded = await uploadToVps(file, bucket, 'artist_media');
+      updateMediaItem(index, 'url', uploaded.url);
+      if (!item.title) {
+        updateMediaItem(index, 'title', uploaded.originalName);
+      }
+      addToast('success', 'Média uploadé');
+    } catch {
+      addToast('error', 'Upload média impossible');
+    } finally {
+      setUploadingMediaIndex(null);
+    }
   };
 
   return (
@@ -250,8 +301,34 @@ export default function NewArtistPage() {
         <Card>
           <h2 className="font-display text-lg font-semibold mb-4">Photos & médias</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <Input label="Image profil (URL)" value={form.profileImageUrl} onChange={(e) => updateField('profileImageUrl', e.target.value)} />
-            <Input label="Image cover (URL)" value={form.coverImageUrl} onChange={(e) => updateField('coverImageUrl', e.target.value)} />
+            <div className="space-y-2">
+              <Input label="Image profil (URL)" value={form.profileImageUrl} onChange={(e) => updateField('profileImageUrl', e.target.value)} />
+              <label className="inline-flex items-center gap-2 text-xs text-[var(--text-secondary)] cursor-pointer">
+                <Upload size={12} />
+                {uploadingProfile ? 'Upload...' : 'Uploader image profil'}
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  disabled={uploadingProfile}
+                  onChange={(e) => uploadProfileImage(e.target.files?.[0])}
+                />
+              </label>
+            </div>
+            <div className="space-y-2">
+              <Input label="Image cover (URL)" value={form.coverImageUrl} onChange={(e) => updateField('coverImageUrl', e.target.value)} />
+              <label className="inline-flex items-center gap-2 text-xs text-[var(--text-secondary)] cursor-pointer">
+                <Upload size={12} />
+                {uploadingCover ? 'Upload...' : 'Uploader image cover'}
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  disabled={uploadingCover}
+                  onChange={(e) => uploadCoverImage(e.target.files?.[0])}
+                />
+              </label>
+            </div>
             <Input
               label="Email compte artiste (invitation auto)"
               type="email"
@@ -282,6 +359,17 @@ export default function NewArtistPage() {
                   </button>
                 </div>
                 <Input label="URL média *" value={item.url} onChange={(e) => updateMediaItem(index, 'url', e.target.value)} placeholder="https://..." />
+                <label className="inline-flex items-center gap-2 text-xs text-[var(--text-secondary)] cursor-pointer">
+                  <Upload size={12} />
+                  {uploadingMediaIndex === index ? 'Upload...' : `Uploader ${item.type}`}
+                  <input
+                    type="file"
+                    accept={item.type === 'image' ? 'image/*' : item.type === 'video' ? 'video/*' : 'audio/*'}
+                    className="hidden"
+                    disabled={uploadingMediaIndex === index}
+                    onChange={(e) => uploadMediaFile(index, e.target.files?.[0])}
+                  />
+                </label>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <Input label="Titre" value={item.title} onChange={(e) => updateMediaItem(index, 'title', e.target.value)} />
                   <Input label="Thumbnail URL (optionnel)" value={item.thumbnailUrl} onChange={(e) => updateMediaItem(index, 'thumbnailUrl', e.target.value)} />

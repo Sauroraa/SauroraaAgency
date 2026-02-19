@@ -107,4 +107,14 @@ export class FilesService implements OnModuleInit {
     await this.minioClient.removeObject(file.bucket, file.objectKey);
     await this.fileRepo.remove(file);
   }
+
+  async getFileStream(fileId: string): Promise<{ stream: NodeJS.ReadableStream; mimeType: string; originalName: string }> {
+    const file = await this.fileRepo.findOneByOrFail({ id: fileId });
+    const stream = await this.minioClient.getObject(file.bucket, file.objectKey);
+    return {
+      stream,
+      mimeType: file.mimeType,
+      originalName: file.originalName,
+    };
+  }
 }

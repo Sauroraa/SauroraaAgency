@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Delete, Param, UseGuards, UseInterceptors, UploadedFile, Query } from '@nestjs/common';
+import { Controller, Post, Get, Delete, Param, UseGuards, UseInterceptors, UploadedFile, Query, StreamableFile } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiBearerAuth, ApiConsumes } from '@nestjs/swagger';
 import { FilesService } from './files.service';
@@ -35,5 +35,20 @@ export class FilesController {
   async delete(@Param('id') id: string) {
     await this.filesService.delete(id);
     return { message: 'File deleted' };
+  }
+}
+
+@ApiTags('Files (Public)')
+@Controller('public/files')
+export class PublicFilesController {
+  constructor(private readonly filesService: FilesService) {}
+
+  @Get(':id')
+  async getFile(@Param('id') id: string) {
+    const { stream, mimeType, originalName } = await this.filesService.getFileStream(id);
+    return new StreamableFile(stream, {
+      type: mimeType,
+      disposition: `inline; filename="${originalName}"`,
+    });
   }
 }
