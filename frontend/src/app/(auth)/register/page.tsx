@@ -101,9 +101,19 @@ function RegisterPageContent() {
     setIsLoading(true);
     try {
       const { data } = await publicApi.post('/auth/register', {
-        ...form,
+        firstName: form.firstName.trim(),
+        lastName: form.lastName.trim(),
         email: form.email.trim(),
+        password: form.password,
         birthDate: normalizeBirthDate(form.birthDate),
+        phone: form.phone.trim(),
+        addressLine1: form.addressLine1.trim(),
+        addressLine2: form.addressLine2.trim() || undefined,
+        postalCode: form.postalCode.trim(),
+        city: form.city.trim(),
+        country: form.country.trim(),
+        companyName: form.companyName.trim() || undefined,
+        vatNumber: form.vatNumber.trim() || undefined,
         invitationToken: token,
       });
       const result = data.data || data;
