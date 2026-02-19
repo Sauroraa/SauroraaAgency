@@ -9,6 +9,7 @@ import { InvitationsService } from '@/modules/invitations/invitations.service';
 import { NotificationsService } from '@/modules/notifications/notifications.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
+import { ChangePasswordDto, UpdateProfileDto } from './dto/update-profile.dto';
 
 @Injectable()
 export class AuthService {
@@ -143,6 +144,37 @@ export class AuthService {
       twoFactorEnabled: user.twoFactorEnabled,
       lastLoginAt: user.lastLoginAt,
     };
+  }
+
+  async updateProfile(userId: string, dto: UpdateProfileDto) {
+    const user = await this.usersService.findById(userId);
+    if (dto.firstName !== undefined) user.firstName = dto.firstName.trim();
+    if (dto.lastName !== undefined) user.lastName = dto.lastName.trim();
+    if (dto.avatarUrl !== undefined) user.avatarUrl = dto.avatarUrl.trim() || null;
+
+    const updated = await this.usersService.update(userId, {
+      firstName: user.firstName,
+      lastName: user.lastName,
+      avatarUrl: user.avatarUrl,
+    });
+
+    return this.serializeUser(updated);
+  }
+
+  async changePassword(userId: string, dto: ChangePasswordDto) {
+    const user = await this.usersService.findById(userId);
+    const valid = await comparePassword(dto.currentPassword, user.passwordHash);
+    if (!valid) {
+      throw new UnauthorizedException('Current password is invalid');
+    }
+    if (dto.currentPassword === dto.newPassword) {
+      throw new BadRequestException('New password must be different');
+    }
+
+    await this.usersService.updatePassword(userId, dto.newPassword);
+    await this.usersService.updateRefreshToken(userId, null);
+
+    return { message: 'Password updated successfully' };
   }
 
   async forgotPassword(email: string) {

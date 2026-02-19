@@ -1,16 +1,93 @@
 'use client';
 
 import { useState } from 'react';
+import { useEffect } from 'react';
+import { useMutation } from '@tanstack/react-query';
 import { Settings, User, Lock, Palette } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { useAuthStore } from '@/stores/authStore';
 import { useThemeStore } from '@/stores/themeStore';
+import { useToastStore } from '@/stores/toastStore';
+import { api } from '@/lib/api';
 
 export default function SettingsPage() {
   const user = useAuthStore((s) => s.user);
+  const hydrateUser = useAuthStore((s) => s.hydrateUser);
   const { theme, toggleTheme } = useThemeStore();
+  const addToast = useToastStore((s) => s.addToast);
+
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [avatarUrl, setAvatarUrl] = useState('');
+
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+
+  useEffect(() => {
+    setFirstName(user?.firstName || '');
+    setLastName(user?.lastName || '');
+    setAvatarUrl(user?.avatarUrl || '');
+  }, [user?.firstName, user?.lastName, user?.avatarUrl]);
+
+  const updateProfile = useMutation({
+    mutationFn: async () => {
+      const res = await api.patch('/auth/profile', {
+        firstName,
+        lastName,
+        avatarUrl,
+      });
+      return res.data.data || res.data;
+    },
+    onSuccess: (updatedUser) => {
+      hydrateUser(updatedUser);
+      addToast('success', 'Profil mis à jour');
+    },
+    onError: () => {
+      addToast('error', 'Erreur lors de la mise à jour du profil');
+    },
+  });
+
+  const changePassword = useMutation({
+    mutationFn: async () => {
+      await api.post('/auth/change-password', {
+        currentPassword,
+        newPassword,
+      });
+    },
+    onSuccess: () => {
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      addToast('success', 'Mot de passe mis à jour, reconnecte-toi');
+      if (typeof window !== 'undefined') {
+        setTimeout(() => {
+          window.location.assign('/login');
+        }, 800);
+      }
+    },
+    onError: () => {
+      addToast('error', 'Impossible de changer le mot de passe');
+    },
+  });
+
+  const onSubmitPassword = () => {
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      addToast('warning', 'Complète tous les champs mot de passe');
+      return;
+    }
+    if (newPassword.length < 8) {
+      addToast('warning', 'Le nouveau mot de passe doit contenir 8 caractères minimum');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      addToast('warning', 'La confirmation du mot de passe ne correspond pas');
+      return;
+    }
+    changePassword.mutate();
+  };
 
   return (
     <div className="space-y-6 max-w-3xl">
@@ -24,12 +101,13 @@ export default function SettingsPage() {
       <Card>
         <h3 className="font-display font-semibold mb-4 flex items-center gap-2"><User size={16} /> Profile</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Input label="First Name" defaultValue={user?.firstName} />
-          <Input label="Last Name" defaultValue={user?.lastName} />
-          <Input label="Email" type="email" defaultValue={user?.email} disabled className="md:col-span-2" />
+          <Input label="First Name" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
+          <Input label="Last Name" value={lastName} onChange={(e) => setLastName(e.target.value)} />
+          <Input label="Avatar URL" value={avatarUrl} onChange={(e) => setAvatarUrl(e.target.value)} className="md:col-span-2" />
+          <Input label="Email" type="email" value={user?.email || ''} disabled className="md:col-span-2" />
         </div>
         <div className="mt-4">
-          <Button>Save Changes</Button>
+          <Button isLoading={updateProfile.isPending} onClick={() => updateProfile.mutate()}>Save Changes</Button>
         </div>
       </Card>
 
@@ -54,17 +132,17 @@ export default function SettingsPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium">Two-Factor Authentication</p>
-              <p className="text-xs text-[var(--text-muted)]">Add an extra layer of security</p>
+              <p className="text-xs text-[var(--text-muted)]">Add an extra layer of security (setup screen next)</p>
             </div>
-            <Button variant="secondary" size="sm">Enable 2FA</Button>
+            <Button variant="secondary" size="sm" disabled>Enable 2FA</Button>
           </div>
           <div className="pt-4 border-t border-[var(--border-color)]">
             <p className="text-sm font-medium mb-3">Change Password</p>
             <div className="space-y-3 max-w-sm">
-              <Input label="Current Password" type="password" />
-              <Input label="New Password" type="password" />
-              <Input label="Confirm Password" type="password" />
-              <Button>Update Password</Button>
+              <Input label="Current Password" type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} />
+              <Input label="New Password" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
+              <Input label="Confirm Password" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+              <Button isLoading={changePassword.isPending} onClick={onSubmitPassword}>Update Password</Button>
             </div>
           </div>
         </div>
