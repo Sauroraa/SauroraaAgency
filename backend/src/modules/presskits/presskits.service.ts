@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import PDFDocument from 'pdfkit';
@@ -9,6 +9,7 @@ import { PresskitLink } from './entities/presskit-link.entity';
 import { PresskitAccessLog } from './entities/presskit-access-log.entity';
 import { CreatePresskitDto, GenerateLinkDto } from './dto/create-presskit.dto';
 import { NotificationsService } from '@/modules/notifications/notifications.service';
+import { Booking } from '@/modules/bookings/entities/booking.entity';
 
 @Injectable()
 export class PresskitsService {
@@ -19,6 +20,8 @@ export class PresskitsService {
     private readonly linkRepo: Repository<PresskitLink>,
     @InjectRepository(PresskitAccessLog)
     private readonly logRepo: Repository<PresskitAccessLog>,
+    @InjectRepository(Booking)
+    private readonly bookingRepo: Repository<Booking>,
     private jwtService: JwtService,
     private config: ConfigService,
     private notificationsService: NotificationsService,
@@ -58,15 +61,36 @@ export class PresskitsService {
     return link;
   }
 
-  async findAll(page = 1, limit = 20, artistId?: string) {
+  async findAll(page = 1, limit = 20, artistId?: string, artistIds?: string[]) {
+    if (Array.isArray(artistIds) && !artistIds.length) {
+      return { items: [], total: 0, page, limit, totalPages: 0 };
+    }
+
+    const where = artistId
+      ? { artistId }
+      : Array.isArray(artistIds)
+        ? { artistId: In(artistIds) }
+        : {};
+
     const [items, total] = await this.presskitRepo.findAndCount({
-      where: artistId ? { artistId } : {},
+      where,
       relations: ['artist', 'createdBy'],
       order: { createdAt: 'DESC' },
       skip: (page - 1) * limit,
       take: limit,
     });
     return { items, total, page, limit, totalPages: Math.ceil(total / limit) };
+  }
+
+  async getOrganizerAccessibleArtistIds(organizerUserId: string): Promise<string[]> {
+    const rows = await this.bookingRepo
+      .createQueryBuilder('booking')
+      .select('DISTINCT booking.artistId', 'artistId')
+      .where('booking.assignedTo = :organizerUserId', { organizerUserId })
+      .andWhere('booking.status IN (:...statuses)', { statuses: ['quoted', 'negotiating', 'confirmed'] })
+      .getRawMany<{ artistId: string }>();
+
+    return rows.map((row) => row.artistId).filter(Boolean);
   }
 
   async findById(id: string): Promise<Presskit> {

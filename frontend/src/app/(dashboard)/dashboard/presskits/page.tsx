@@ -8,8 +8,12 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { useAuthStore } from '@/stores/authStore';
 
 export default function PresskitsPage() {
+  const role = useAuthStore((s) => s.user?.role);
+  const isOrganizer = role === 'organizer';
+
   const { data, isLoading } = useQuery({
     queryKey: ['presskits'],
     queryFn: async () => {
@@ -27,9 +31,11 @@ export default function PresskitsPage() {
           <h1 className="font-display text-2xl font-bold">Presskits</h1>
           <p className="text-sm text-[var(--text-muted)] mt-1">Create and manage artist presskits</p>
         </div>
-        <Link href="/dashboard/presskits/new">
-          <Button><Plus size={16} /> Create Presskit</Button>
-        </Link>
+        {!isOrganizer && (
+          <Link href="/dashboard/presskits/new">
+            <Button><Plus size={16} /> Create Presskit</Button>
+          </Link>
+        )}
       </div>
 
       {isLoading ? (
@@ -67,7 +73,7 @@ export default function PresskitsPage() {
           <FileText size={48} className="mx-auto text-[var(--text-muted)] mb-4" />
           <h3 className="font-display text-lg font-semibold mb-2">No presskits yet</h3>
           <p className="text-sm text-[var(--text-muted)] mb-6">Create your first presskit to share with promoters.</p>
-          <Link href="/dashboard/presskits/new"><Button><Plus size={16} /> Create Presskit</Button></Link>
+          {!isOrganizer && <Link href="/dashboard/presskits/new"><Button><Plus size={16} /> Create Presskit</Button></Link>}
         </Card>
       )}
     </div>

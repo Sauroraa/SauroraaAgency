@@ -54,7 +54,11 @@ export class PresskitsController {
 
   @Get()
   @Roles('admin', 'manager', 'organizer', 'artist')
-  findAll(@Query() pagination: PaginationDto, @Query('artistId') artistId?: string, @CurrentUser() user?: any) {
+  async findAll(@Query() pagination: PaginationDto, @Query('artistId') artistId?: string, @CurrentUser() user?: any) {
+    if (user?.role === 'organizer') {
+      const accessibleArtistIds = await this.presskitsService.getOrganizerAccessibleArtistIds(user.id);
+      return this.presskitsService.findAll(pagination.page, pagination.limit, undefined, accessibleArtistIds);
+    }
     const scopedArtistId = user?.role === 'artist' ? user?.linkedArtistId : artistId;
     return this.presskitsService.findAll(pagination.page, pagination.limit, scopedArtistId);
   }
@@ -70,17 +74,23 @@ export class PresskitsController {
         throw new ForbiddenException('You can only access your own presskit');
       }
     }
+    if (user?.role === 'organizer') {
+      const accessibleArtistIds = await this.presskitsService.getOrganizerAccessibleArtistIds(user.id);
+      if (!accessibleArtistIds.includes(presskit.artistId)) {
+        throw new ForbiddenException('You can only access presskits linked to your active contracts');
+      }
+    }
     return presskit;
   }
 
   @Post()
-  @Roles('admin', 'manager', 'organizer')
+  @Roles('admin', 'manager')
   create(@Body() dto: CreatePresskitDto, @CurrentUser('id') userId: string) {
     return this.presskitsService.create(dto, userId);
   }
 
   @Patch(':id')
-  @Roles('admin', 'manager', 'organizer')
+  @Roles('admin', 'manager')
   update(@Param('id') id: string, @Body() dto: Partial<CreatePresskitDto>) {
     return this.presskitsService.update(id, dto);
   }
@@ -92,13 +102,13 @@ export class PresskitsController {
   }
 
   @Post(':id/generate-link')
-  @Roles('admin', 'manager', 'organizer')
+  @Roles('admin', 'manager')
   generateLink(@Param('id') id: string, @Body() dto: GenerateLinkDto) {
     return this.presskitsService.generateLink(id, dto);
   }
 
   @Patch(':id/links/:linkId/revoke')
-  @Roles('admin', 'manager', 'organizer')
+  @Roles('admin', 'manager')
   revokeLink(@Param('id') id: string, @Param('linkId') linkId: string) {
     return this.presskitsService.revokeLink(id, linkId);
   }
@@ -106,6 +116,13 @@ export class PresskitsController {
   @Get(':id/analytics')
   @Roles('admin', 'manager', 'organizer', 'artist')
   async getAnalytics(@Param('id') id: string, @CurrentUser() user?: any) {
+    if (user?.role === 'organizer') {
+      const presskit = await this.presskitsService.findById(id);
+      const accessibleArtistIds = await this.presskitsService.getOrganizerAccessibleArtistIds(user.id);
+      if (!accessibleArtistIds.includes(presskit.artistId)) {
+        throw new ForbiddenException('You can only access analytics linked to your active contracts');
+      }
+    }
     if (user?.role === 'artist') {
       const presskit = await this.presskitsService.findById(id);
       const allowedByPresskit = user?.linkedPresskitId && user.linkedPresskitId === id;

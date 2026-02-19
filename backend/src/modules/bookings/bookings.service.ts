@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { Booking } from './entities/booking.entity';
@@ -15,6 +15,7 @@ import * as ExcelJS from 'exceljs';
 @Injectable()
 export class BookingsService {
   private bookingCounter = 0;
+  private static readonly ORGANIZER_CONTRACT_STATUSES = ['quoted', 'negotiating', 'confirmed'] as const;
 
   constructor(
     @InjectRepository(Booking)
@@ -85,11 +86,31 @@ export class BookingsService {
     return this.submitPublic(dto, ip);
   }
 
-  async findAll(page = 1, limit = 20, status?: string, artistId?: string, requesterEmail?: string) {
+  async findAll(
+    page = 1,
+    limit = 20,
+    status?: string,
+    artistId?: string,
+    requesterEmail?: string,
+    assignedTo?: string,
+    organizerContractScope = false,
+  ) {
     const where: any = {};
-    if (status) where.status = status;
+    if (organizerContractScope) {
+      if (status) {
+        if (!BookingsService.ORGANIZER_CONTRACT_STATUSES.includes(status as any)) {
+          return { items: [], total: 0, page, limit, totalPages: 0 };
+        }
+        where.status = status;
+      } else {
+        where.status = In([...BookingsService.ORGANIZER_CONTRACT_STATUSES]);
+      }
+    } else if (status) {
+      where.status = status;
+    }
     if (artistId) where.artistId = artistId;
     if (requesterEmail) where.requesterEmail = requesterEmail;
+    if (assignedTo) where.assignedTo = assignedTo;
 
     const [items, total] = await this.bookingRepo.findAndCount({
       where,
@@ -99,6 +120,24 @@ export class BookingsService {
       take: limit,
     });
     return { items, total, page, limit, totalPages: Math.ceil(total / limit) };
+  }
+
+  canOrganizerAccessBooking(booking: Booking, organizerUserId: string) {
+    return (
+      booking.assignedTo === organizerUserId
+      && BookingsService.ORGANIZER_CONTRACT_STATUSES.includes(booking.status as any)
+    );
+  }
+
+  async getOrganizerAccessibleArtistIds(organizerUserId: string): Promise<string[]> {
+    const rows = await this.bookingRepo
+      .createQueryBuilder('booking')
+      .select('DISTINCT booking.artistId', 'artistId')
+      .where('booking.assignedTo = :organizerUserId', { organizerUserId })
+      .andWhere('booking.status IN (:...statuses)', { statuses: [...BookingsService.ORGANIZER_CONTRACT_STATUSES] })
+      .getRawMany<{ artistId: string }>();
+
+    return rows.map((row) => row.artistId).filter(Boolean);
   }
 
   async findById(id: string): Promise<Booking> {

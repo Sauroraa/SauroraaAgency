@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
@@ -13,6 +13,7 @@ import { Card } from '@/components/ui/Card';
 import { useToastStore } from '@/stores/toastStore';
 import type { Artist } from '@/types/artist';
 import { uploadToVps } from '@/lib/fileUpload';
+import { useAuthStore } from '@/stores/authStore';
 
 interface Section {
   id: string;
@@ -60,6 +61,7 @@ const DEFAULT_SECTIONS: Record<string, Section[]> = {
 
 export default function NewPresskitPage() {
   const router = useRouter();
+  const role = useAuthStore((s) => s.user?.role);
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
   const addToast = useToastStore((s) => s.addToast);
@@ -74,6 +76,12 @@ export default function NewPresskitPage() {
   const [eventDate, setEventDate] = useState('');
   const [eventVenue, setEventVenue] = useState('');
   const [uploadingSectionId, setUploadingSectionId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (role === 'organizer') {
+      router.replace('/dashboard/presskits');
+    }
+  }, [role, router]);
 
   const { data: artistsData } = useQuery({
     queryKey: ['admin-artists-select'],

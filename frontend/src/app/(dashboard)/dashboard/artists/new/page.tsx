@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
@@ -14,6 +14,7 @@ import { useToastStore } from '@/stores/toastStore';
 import { COUNTRIES } from '@/lib/constants';
 import type { Genre } from '@/types/artist';
 import { uploadToVps } from '@/lib/fileUpload';
+import { useAuthStore } from '@/stores/authStore';
 
 const AVAILABILITY_OPTIONS = ['available', 'limited', 'unavailable'] as const;
 const MEDIA_TYPES = ['image', 'video', 'audio'] as const;
@@ -29,6 +30,7 @@ type ArtistMediaForm = {
 
 export default function NewArtistPage() {
   const router = useRouter();
+  const role = useAuthStore((s) => s.user?.role);
   const queryClient = useQueryClient();
   const addToast = useToastStore((s) => s.addToast);
 
@@ -72,6 +74,12 @@ export default function NewArtistPage() {
   const [mediaItems, setMediaItems] = useState<ArtistMediaForm[]>([
     { type: 'image', url: '', thumbnailUrl: '', title: '' },
   ]);
+
+  useEffect(() => {
+    if (role === 'organizer') {
+      router.replace('/dashboard/artists');
+    }
+  }, [role, router]);
 
   const { data: genres = [] } = useQuery<Genre[]>({
     queryKey: ['genres'],

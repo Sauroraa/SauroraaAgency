@@ -14,6 +14,7 @@ import { BOOKING_STATUSES, COUNTRIES } from '@/lib/constants';
 import type { Booking } from '@/types/booking';
 import type { Artist } from '@/types/artist';
 import { useToastStore } from '@/stores/toastStore';
+import { useAuthStore } from '@/stores/authStore';
 
 function getStatusBadge(status: string) {
   const s = BOOKING_STATUSES.find((b) => b.value === status);
@@ -31,6 +32,8 @@ function getScoreColor(score: number | null) {
 export default function BookingsPage() {
   const queryClient = useQueryClient();
   const addToast = useToastStore((s) => s.addToast);
+  const role = useAuthStore((s) => s.user?.role);
+  const isOrganizer = role === 'organizer';
   const [statusFilter, setStatusFilter] = useState<string>('');
   const router = useRouter();
   const [showCreate, setShowCreate] = useState(false);
@@ -138,13 +141,15 @@ export default function BookingsPage() {
         <p className="text-sm text-[var(--text-muted)] mt-1">Manage booking requests and pipeline</p>
       </div>
 
-      <div className="flex justify-end">
-        <Button onClick={() => setShowCreate((v) => !v)}>
-          <Plus size={14} /> {showCreate ? 'Fermer' : 'Nouveau booking'}
-        </Button>
-      </div>
+      {!isOrganizer && (
+        <div className="flex justify-end">
+          <Button onClick={() => setShowCreate((v) => !v)}>
+            <Plus size={14} /> {showCreate ? 'Fermer' : 'Nouveau booking'}
+          </Button>
+        </div>
+      )}
 
-      {showCreate && (
+      {!isOrganizer && showCreate && (
         <Card>
           <h3 className="font-display font-semibold mb-4">Créer un booking</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -231,12 +236,14 @@ export default function BookingsPage() {
             </button>
           ))}
         </div>
-        <button
-          onClick={handleExport}
-          className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-[var(--border-color)] text-xs text-[var(--text-secondary)] hover:text-aurora-cyan hover:border-aurora-cyan/30 transition-colors"
-        >
-          <Download size={14} /> Export Excel
-        </button>
+        {!isOrganizer && (
+          <button
+            onClick={handleExport}
+            className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-[var(--border-color)] text-xs text-[var(--text-secondary)] hover:text-aurora-cyan hover:border-aurora-cyan/30 transition-colors"
+          >
+            <Download size={14} /> Export Excel
+          </button>
+        )}
       </div>
 
       <Card className="p-0 overflow-hidden">

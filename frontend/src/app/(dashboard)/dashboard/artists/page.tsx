@@ -12,9 +12,12 @@ import { Badge } from '@/components/ui/Badge';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { COUNTRIES } from '@/lib/constants';
 import type { Artist } from '@/types/artist';
+import { useAuthStore } from '@/stores/authStore';
 
 export default function DashboardArtistsPage() {
   const [search, setSearch] = useState('');
+  const role = useAuthStore((s) => s.user?.role);
+  const isOrganizer = role === 'organizer';
 
   const { data, isLoading } = useQuery({
     queryKey: ['admin-artists', search],
@@ -36,9 +39,11 @@ export default function DashboardArtistsPage() {
           <h1 className="font-display text-2xl font-bold">Artists</h1>
           <p className="text-sm text-[var(--text-muted)] mt-1">Manage your artist roster</p>
         </div>
-        <Link href="/dashboard/artists/new">
-          <Button><Plus size={16} /> Add Artist</Button>
-        </Link>
+        {!isOrganizer && (
+          <Link href="/dashboard/artists/new">
+            <Button><Plus size={16} /> Add Artist</Button>
+          </Link>
+        )}
       </div>
 
       <div className="relative max-w-md">
@@ -106,14 +111,18 @@ export default function DashboardArtistsPage() {
                   <td className="py-3 px-6 font-mono text-aurora-cyan">{artist.popularityScore}</td>
                   <td className="py-3 px-6">
                     <div className="flex items-center justify-end gap-2">
-                      <Link href={`/dashboard/artists/${artist.id}`}>
-                        <button className="p-1.5 rounded-lg hover:bg-dark-700 transition-colors">
-                          <Edit size={14} />
-                        </button>
-                      </Link>
-                      <button className="p-1.5 rounded-lg hover:bg-dark-700 transition-colors text-[var(--text-muted)]">
-                        {artist.isConfidential ? <EyeOff size={14} /> : <Eye size={14} />}
-                      </button>
+                      {!isOrganizer && (
+                        <>
+                          <Link href={`/dashboard/artists/${artist.id}`}>
+                            <button className="p-1.5 rounded-lg hover:bg-dark-700 transition-colors">
+                              <Edit size={14} />
+                            </button>
+                          </Link>
+                          <button className="p-1.5 rounded-lg hover:bg-dark-700 transition-colors text-[var(--text-muted)]">
+                            {artist.isConfidential ? <EyeOff size={14} /> : <Eye size={14} />}
+                          </button>
+                        </>
+                      )}
                     </div>
                   </td>
                 </motion.tr>

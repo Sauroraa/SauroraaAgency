@@ -39,6 +39,7 @@ export class BookingsController {
   constructor(private readonly bookingsService: BookingsService) {}
 
   @Post()
+  @Roles('admin', 'manager', 'promoter')
   create(@Body() dto: CreateBookingDto, @Req() req: Request) {
     const ip = req.ip || req.socket.remoteAddress || '0.0.0.0';
     return this.bookingsService.submitAuthenticated(dto, ip);
@@ -49,10 +50,21 @@ export class BookingsController {
   findAll(@Query() pagination: PaginationDto, @Query('status') status?: string, @CurrentUser() user?: any) {
     const artistId = user?.role === 'artist' ? user?.linkedArtistId : undefined;
     const requesterEmail = user?.role === 'promoter' ? user?.email : undefined;
-    return this.bookingsService.findAll(pagination.page, pagination.limit, status, artistId, requesterEmail);
+    const assignedTo = user?.role === 'organizer' ? user?.id : undefined;
+    const organizerScope = user?.role === 'organizer';
+    return this.bookingsService.findAll(
+      pagination.page,
+      pagination.limit,
+      status,
+      artistId,
+      requesterEmail,
+      assignedTo,
+      organizerScope,
+    );
   }
 
   @Get('export')
+  @Roles('admin', 'manager')
   @Header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
   async export(@Query('status') status?: string) {
     const buffer = await this.bookingsService.exportToExcel(status);
@@ -72,11 +84,14 @@ export class BookingsController {
     if (user?.role === 'promoter' && booking.requesterEmail?.toLowerCase() !== user?.email?.toLowerCase()) {
       throw new ForbiddenException('You can only access your own requests');
     }
+    if (user?.role === 'organizer' && !this.bookingsService.canOrganizerAccessBooking(booking, user?.id)) {
+      throw new ForbiddenException('You can only access assigned bookings with contracts in progress');
+    }
     return booking;
   }
 
   @Patch(':id/status')
-  @Roles('admin', 'manager', 'organizer')
+  @Roles('admin', 'manager')
   updateStatus(
     @Param('id') id: string,
     @Body() body: { status: string; note?: string },
@@ -86,7 +101,7 @@ export class BookingsController {
   }
 
   @Post(':id/comments')
-  @Roles('admin', 'manager', 'organizer', 'artist')
+  @Roles('admin', 'manager', 'artist')
   addComment(
     @Param('id') id: string,
     @Body() body: { content: string; isInternal?: boolean },
@@ -108,7 +123,7 @@ export class BookingsController {
   }
 
   @Post(':id/send-contract')
-  @Roles('admin', 'manager', 'organizer')
+  @Roles('admin', 'manager')
   sendContract(
     @Param('id') id: string,
     @Body() body: { quotedAmount?: number; quotePdfUrl?: string; customMessage?: string; expiresInHours?: number },

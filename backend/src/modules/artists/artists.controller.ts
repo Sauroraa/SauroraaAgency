@@ -51,6 +51,9 @@ export class ArtistsController {
   @Get()
   @Roles('admin', 'manager', 'organizer', 'artist')
   async findAll(@Query() filters: FilterArtistsDto, @CurrentUser() user: any) {
+    if (user.role === 'organizer') {
+      return this.artistsService.findAllForOrganizer(filters, user.id);
+    }
     if (user.role === 'artist') {
       if (!user.linkedArtistId) {
         return { items: [], total: 0, page: 1, limit: 20, totalPages: 0 };
@@ -63,9 +66,15 @@ export class ArtistsController {
 
   @Get(':id')
   @Roles('admin', 'manager', 'organizer', 'artist')
-  findOne(@Param('id') id: string, @CurrentUser() user: any) {
+  async findOne(@Param('id') id: string, @CurrentUser() user: any) {
     if (user.role === 'artist' && user.linkedArtistId !== id) {
       throw new ForbiddenException('You can only access your artist profile');
+    }
+    if (user.role === 'organizer') {
+      const allowed = await this.artistsService.canOrganizerAccessArtist(user.id, id);
+      if (!allowed) {
+        throw new ForbiddenException('You can only access artists linked to your active contracts');
+      }
     }
     return this.artistsService.findById(id);
   }
@@ -96,7 +105,7 @@ export class ArtistsController {
   }
 
   @Get(':id/similar')
-  @Roles('admin', 'manager', 'organizer')
+  @Roles('admin', 'manager')
   findSimilar(@Param('id') id: string) {
     return this.artistsService.findSimilar(id);
   }

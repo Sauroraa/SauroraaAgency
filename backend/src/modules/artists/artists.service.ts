@@ -105,6 +105,49 @@ export class ArtistsService {
     return { items, total, page: filters.page, limit: filters.limit, totalPages: Math.ceil(total / (filters.limit || 20)) };
   }
 
+  async getOrganizerAccessibleArtistIds(organizerUserId: string): Promise<string[]> {
+    const rows = await this.bookingRepo
+      .createQueryBuilder('booking')
+      .select('DISTINCT booking.artistId', 'artistId')
+      .where('booking.assignedTo = :organizerUserId', { organizerUserId })
+      .andWhere('booking.status IN (:...statuses)', { statuses: ['quoted', 'negotiating', 'confirmed'] })
+      .getRawMany<{ artistId: string }>();
+
+    return rows.map((row) => row.artistId).filter(Boolean);
+  }
+
+  async canOrganizerAccessArtist(organizerUserId: string, artistId: string): Promise<boolean> {
+    const artistIds = await this.getOrganizerAccessibleArtistIds(organizerUserId);
+    return artistIds.includes(artistId);
+  }
+
+  async findAllForOrganizer(filters: FilterArtistsDto, organizerUserId: string) {
+    const artistIds = await this.getOrganizerAccessibleArtistIds(organizerUserId);
+    if (!artistIds.length) {
+      return { items: [], total: 0, page: filters.page, limit: filters.limit, totalPages: 0 };
+    }
+
+    const qb = this.artistRepo.createQueryBuilder('artist')
+      .leftJoinAndSelect('artist.genres', 'genre')
+      .leftJoinAndSelect('artist.media', 'media')
+      .leftJoinAndSelect('artist.manager', 'manager')
+      .where('artist.id IN (:...artistIds)', { artistIds });
+
+    if (filters.search) {
+      qb.andWhere('(artist.name LIKE :search OR artist.realName LIKE :search)', {
+        search: `%${filters.search}%`,
+      });
+    }
+
+    const [items, total] = await qb
+      .orderBy('artist.createdAt', 'DESC')
+      .skip(filters.skip)
+      .take(filters.limit)
+      .getManyAndCount();
+
+    return { items, total, page: filters.page, limit: filters.limit, totalPages: Math.ceil(total / (filters.limit || 20)) };
+  }
+
   async findById(id: string): Promise<Artist> {
     const artist = await this.artistRepo.findOne({
       where: { id },
