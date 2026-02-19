@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Save, Plus, GripVertical, Trash2, Calendar } from 'lucide-react';
@@ -59,11 +59,13 @@ const DEFAULT_SECTIONS: Record<string, Section[]> = {
 
 export default function NewPresskitPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const queryClient = useQueryClient();
   const addToast = useToastStore((s) => s.addToast);
+  const preselectedArtistId = searchParams.get('artistId') || '';
 
   const [title, setTitle] = useState('');
-  const [artistId, setArtistId] = useState('');
+  const [artistId, setArtistId] = useState(preselectedArtistId);
   const [template, setTemplate] = useState('standard');
   const [sections, setSections] = useState<Section[]>(DEFAULT_SECTIONS.standard);
   const [isEventReady, setIsEventReady] = useState(false);

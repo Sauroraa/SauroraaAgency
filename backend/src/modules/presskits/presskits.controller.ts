@@ -51,8 +51,8 @@ export class PresskitsController {
   constructor(private readonly presskitsService: PresskitsService) {}
 
   @Get()
-  findAll(@Query() pagination: PaginationDto) {
-    return this.presskitsService.findAll(pagination.page, pagination.limit);
+  findAll(@Query() pagination: PaginationDto, @Query('artistId') artistId?: string) {
+    return this.presskitsService.findAll(pagination.page, pagination.limit, artistId);
   }
 
   @Get(':id')

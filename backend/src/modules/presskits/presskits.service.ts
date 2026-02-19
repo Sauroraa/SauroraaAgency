@@ -58,8 +58,9 @@ export class PresskitsService {
     return link;
   }
 
-  async findAll(page = 1, limit = 20) {
+  async findAll(page = 1, limit = 20, artistId?: string) {
     const [items, total] = await this.presskitRepo.findAndCount({
+      where: artistId ? { artistId } : {},
       relations: ['artist', 'createdBy'],
       order: { createdAt: 'DESC' },
       skip: (page - 1) * limit,

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Save, Trash2 } from 'lucide-react';
+import { ArrowLeft, Save, Trash2, FileText } from 'lucide-react';
 import Link from 'next/link';
 import { api } from '@/lib/api';
 import { Button } from '@/components/ui/Button';
@@ -17,12 +17,20 @@ import type { Genre, Artist } from '@/types/artist';
 
 const AVAILABILITY_OPTIONS = ['available', 'limited', 'unavailable'] as const;
 
+type PresskitOption = {
+  id: string;
+  title: string;
+  artistId: string;
+  artist?: { id: string; name: string };
+};
+
 export default function EditArtistPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const queryClient = useQueryClient();
   const addToast = useToastStore((s) => s.addToast);
   const [showDelete, setShowDelete] = useState(false);
+  const [selectedPresskitId, setSelectedPresskitId] = useState('');
 
   const [form, setForm] = useState({
     name: '', realName: '', slug: '', bioShort: '', bioFull: '',
@@ -50,6 +58,25 @@ export default function EditArtistPage() {
     },
   });
 
+  const { data: linkedPresskitData } = useQuery({
+    queryKey: ['artist-presskit', id],
+    queryFn: async () => {
+      const res = await api.get(`/presskits?limit=1&artistId=${id}`);
+      return res.data.data || res.data;
+    },
+  });
+
+  const linkedPresskit: PresskitOption | undefined = linkedPresskitData?.items?.[0];
+
+  const { data: presskitsData } = useQuery({
+    queryKey: ['presskits-select'],
+    queryFn: async () => {
+      const res = await api.get('/presskits?limit=100');
+      return res.data.data || res.data;
+    },
+  });
+  const presskits: PresskitOption[] = presskitsData?.items || [];
+
   useEffect(() => {
     if (artist) {
       setForm({
@@ -69,6 +96,12 @@ export default function EditArtistPage() {
       setSelectedGenres(artist.genres?.map((g) => g.id) || []);
     }
   }, [artist]);
+
+  useEffect(() => {
+    if (linkedPresskit?.id) {
+      setSelectedPresskitId(linkedPresskit.id);
+    }
+  }, [linkedPresskit?.id]);
 
   const updateMutation = useMutation({
     mutationFn: async () => {
@@ -99,6 +132,20 @@ export default function EditArtistPage() {
     onError: () => addToast('error', 'Failed to delete artist'),
   });
 
+  const linkPresskitMutation = useMutation({
+    mutationFn: async () => {
+      if (!selectedPresskitId) return;
+      return api.patch(`/presskits/${selectedPresskitId}`, { artistId: id });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['artist-presskit', id] });
+      queryClient.invalidateQueries({ queryKey: ['presskits'] });
+      queryClient.invalidateQueries({ queryKey: ['presskits-select'] });
+      addToast('success', 'Presskit lié à cet artiste');
+    },
+    onError: () => addToast('error', 'Impossible de lier le presskit'),
+  });
+
   const updateField = (field: string, value: any) => setForm((prev) => ({ ...prev, [field]: value }));
 
   if (isLoading) {
@@ -121,6 +168,48 @@ export default function EditArtistPage() {
       </div>
 
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+        <Card>
+          <h2 className="font-display text-lg font-semibold mb-4">Presskit lié</h2>
+          {linkedPresskit ? (
+            <div className="mb-4 p-3 rounded-xl border border-aurora-cyan/30 bg-aurora-cyan/5">
+              <p className="text-sm font-medium">{linkedPresskit.title}</p>
+              <p className="text-xs text-[var(--text-muted)] mt-1">Presskit actif pour cet artiste</p>
+            </div>
+          ) : (
+            <p className="text-sm text-[var(--text-muted)] mb-4">Aucun presskit lié pour le moment.</p>
+          )}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <label className="block text-sm font-medium text-[var(--text-secondary)]">Lier un presskit existant</label>
+              <select
+                value={selectedPresskitId}
+                onChange={(e) => setSelectedPresskitId(e.target.value)}
+                className="w-full px-4 py-2.5 rounded-lg bg-dark-800 border border-dark-500 text-sm outline-none focus:border-aurora-cyan"
+              >
+                <option value="">Sélectionner un presskit...</option>
+                {presskits.map((pk) => (
+                  <option key={pk.id} value={pk.id}>
+                    {pk.title}
+                    {pk.artist?.name ? ` (${pk.artist.name})` : ''}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="flex items-end gap-3">
+              <Button
+                onClick={() => linkPresskitMutation.mutate()}
+                isLoading={linkPresskitMutation.isPending}
+                disabled={!selectedPresskitId}
+              >
+                <FileText size={16} /> Lier ce presskit
+              </Button>
+              <Link href={`/dashboard/presskits/new?artistId=${id}`}>
+                <Button variant="ghost">Créer un nouveau presskit</Button>
+              </Link>
+            </div>
+          </div>
+        </Card>
+
         <Card>
           <h2 className="font-display text-lg font-semibold mb-4">Basic Information</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

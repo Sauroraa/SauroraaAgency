@@ -61,7 +61,7 @@ export default function NewArtistPage() {
     presskitTemplate: 'event',
     isConfidential: false,
     isCurated: false,
-    createPresskit: true,
+    createPresskit: false,
   });
   const [selectedGenres, setSelectedGenres] = useState<number[]>([]);
   const [mediaItems, setMediaItems] = useState<ArtistMediaForm[]>([
@@ -328,7 +328,7 @@ export default function NewArtistPage() {
           <div className="mt-4">
             <label className="flex items-center gap-2 cursor-pointer">
               <input type="checkbox" checked={form.createPresskit} onChange={(e) => updateField('createPresskit', e.target.checked)} className="rounded border-dark-500" />
-              <span className="text-sm">Créer automatiquement un presskit complet</span>
+              <span className="text-sm">Créer automatiquement un presskit complet (sinon lie un presskit existant après création)</span>
             </label>
           </div>
         </Card>
