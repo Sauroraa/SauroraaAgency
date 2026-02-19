@@ -21,6 +21,15 @@ export default function SettingsPage() {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [avatarUrl, setAvatarUrl] = useState('');
+  const [birthDate, setBirthDate] = useState('');
+  const [phone, setPhone] = useState('');
+  const [addressLine1, setAddressLine1] = useState('');
+  const [addressLine2, setAddressLine2] = useState('');
+  const [postalCode, setPostalCode] = useState('');
+  const [city, setCity] = useState('');
+  const [country, setCountry] = useState('');
+  const [companyName, setCompanyName] = useState('');
+  const [vatNumber, setVatNumber] = useState('');
 
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -30,7 +39,16 @@ export default function SettingsPage() {
     setFirstName(user?.firstName || '');
     setLastName(user?.lastName || '');
     setAvatarUrl(user?.avatarUrl || '');
-  }, [user?.firstName, user?.lastName, user?.avatarUrl]);
+    setBirthDate(user?.birthDate ? String(user.birthDate).slice(0, 10) : '');
+    setPhone(user?.phone || '');
+    setAddressLine1(user?.addressLine1 || '');
+    setAddressLine2(user?.addressLine2 || '');
+    setPostalCode(user?.postalCode || '');
+    setCity(user?.city || '');
+    setCountry(user?.country || '');
+    setCompanyName(user?.companyName || '');
+    setVatNumber(user?.vatNumber || '');
+  }, [user]);
 
   const updateProfile = useMutation({
     mutationFn: async () => {
@@ -46,6 +64,15 @@ export default function SettingsPage() {
         firstName: firstNameTrimmed,
         lastName: lastNameTrimmed,
         ...(avatarUrlTrimmed ? { avatarUrl: avatarUrlTrimmed } : {}),
+        birthDate: birthDate || undefined,
+        phone: phone.trim() || undefined,
+        addressLine1: addressLine1.trim() || undefined,
+        addressLine2: addressLine2.trim() || undefined,
+        postalCode: postalCode.trim() || undefined,
+        city: city.trim() || undefined,
+        country: country.trim() || undefined,
+        companyName: companyName.trim() || undefined,
+        vatNumber: vatNumber.trim() || undefined,
       });
       return res.data.data || res.data;
     },
@@ -115,6 +142,15 @@ export default function SettingsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Input label="First Name" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
           <Input label="Last Name" value={lastName} onChange={(e) => setLastName(e.target.value)} />
+          <Input label="Date of Birth" type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} />
+          <Input label="Phone" value={phone} onChange={(e) => setPhone(e.target.value)} />
+          <Input label="Address" value={addressLine1} onChange={(e) => setAddressLine1(e.target.value)} className="md:col-span-2" />
+          <Input label="Address Line 2" value={addressLine2} onChange={(e) => setAddressLine2(e.target.value)} className="md:col-span-2" />
+          <Input label="Postal Code" value={postalCode} onChange={(e) => setPostalCode(e.target.value)} />
+          <Input label="City" value={city} onChange={(e) => setCity(e.target.value)} />
+          <Input label="Country" value={country} onChange={(e) => setCountry(e.target.value)} />
+          <Input label="Company" value={companyName} onChange={(e) => setCompanyName(e.target.value)} />
+          <Input label="VAT Number" value={vatNumber} onChange={(e) => setVatNumber(e.target.value)} />
           <Input label="Avatar URL" value={avatarUrl} onChange={(e) => setAvatarUrl(e.target.value)} className="md:col-span-2" />
           <Input label="Email" type="email" value={user?.email || ''} disabled className="md:col-span-2" />
         </div>

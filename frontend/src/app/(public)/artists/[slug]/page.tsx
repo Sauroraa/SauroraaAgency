@@ -25,6 +25,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   const title = artist.metaTitle || `${artist.name} | Artist Profile`;
   const description = artist.metaDescription || artist.bioShort || `${artist.name} represented by Sauroraa Agency.`;
   const url = `${SITE_URL}/artists/${artist.slug}`;
+  const image = artist.coverImageUrl || artist.profileImageUrl || `${SITE_URL}/images/header.png`;
 
   return {
     title,
@@ -34,7 +35,13 @@ export async function generateMetadata({ params }: { params: { slug: string } })
       description,
       url,
       type: 'profile',
-      images: artist.coverImageUrl ? [{ url: artist.coverImageUrl }] : undefined,
+      images: [{ url: image }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [image],
     },
     alternates: { canonical: url },
   };

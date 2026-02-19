@@ -47,6 +47,13 @@ export function DashboardSidebar({ collapsed, onToggle }: { collapsed: boolean; 
     { href: '/dashboard/presskits', icon: FileText, label: t.dashboard.presskits },
     { href: '/dashboard/settings', icon: Settings, label: t.dashboard.settings },
   ];
+  const artistLinks = [
+    { href: '/dashboard', icon: LayoutDashboard, label: t.dashboard.dashboard },
+    { href: '/dashboard/artists', icon: Music, label: t.dashboard.myArtists },
+    { href: '/dashboard/bookings', icon: Calendar, label: t.dashboard.bookings },
+    { href: '/dashboard/presskits', icon: FileText, label: t.dashboard.presskits },
+    { href: '/dashboard/settings', icon: Settings, label: t.dashboard.settings },
+  ];
 
   const links =
     user?.role === 'admin'
@@ -55,6 +62,8 @@ export function DashboardSidebar({ collapsed, onToggle }: { collapsed: boolean; 
         ? managerLinks
         : user?.role === 'organizer'
           ? organizerLinks
+          : user?.role === 'artist'
+            ? artistLinks
           : promoterLinks;
 
   const handleLogout = async () => {

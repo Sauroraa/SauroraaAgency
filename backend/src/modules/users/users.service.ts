@@ -42,6 +42,17 @@ export class UsersService {
       firstName: dto.firstName,
       lastName: dto.lastName,
       role: dto.role || 'manager',
+      birthDate: dto.birthDate ? new Date(dto.birthDate) : null,
+      phone: dto.phone || null,
+      addressLine1: dto.addressLine1 || null,
+      addressLine2: dto.addressLine2 || null,
+      postalCode: dto.postalCode || null,
+      city: dto.city || null,
+      country: dto.country || null,
+      companyName: dto.companyName || null,
+      vatNumber: dto.vatNumber || null,
+      linkedArtistId: dto.linkedArtistId || null,
+      linkedPresskitId: dto.linkedPresskitId || null,
     });
     return this.userRepo.save(user);
   }

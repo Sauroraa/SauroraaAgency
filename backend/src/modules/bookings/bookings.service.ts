@@ -85,9 +85,11 @@ export class BookingsService {
     return this.submitPublic(dto, ip);
   }
 
-  async findAll(page = 1, limit = 20, status?: string) {
+  async findAll(page = 1, limit = 20, status?: string, artistId?: string, requesterEmail?: string) {
     const where: any = {};
     if (status) where.status = status;
+    if (artistId) where.artistId = artistId;
+    if (requesterEmail) where.requesterEmail = requesterEmail;
 
     const [items, total] = await this.bookingRepo.findAndCount({
       where,
@@ -141,7 +143,7 @@ export class BookingsService {
   private signContractToken(bookingId: string, requesterEmail: string, expiresInHours?: number) {
     const payload = { type: 'booking_contract', bookingId, requesterEmail };
     return this.jwtService.sign(payload, {
-      secret: this.configService.get('JWT_BOOKING_SIGN_SECRET', this.configService.get('JWT_ACCESS_SECRET')),
+      secret: (this.configService.get<string>('JWT_BOOKING_SIGN_SECRET') || this.configService.get<string>('JWT_ACCESS_SECRET') || 'dev-secret'),
       expiresIn: expiresInHours ? `${expiresInHours}h` : '7d',
     });
   }
@@ -149,7 +151,7 @@ export class BookingsService {
   private verifyContractToken(token: string): { bookingId: string; requesterEmail: string; type: string } {
     try {
       return this.jwtService.verify(token, {
-        secret: this.configService.get('JWT_BOOKING_SIGN_SECRET', this.configService.get('JWT_ACCESS_SECRET')),
+        secret: (this.configService.get<string>('JWT_BOOKING_SIGN_SECRET') || this.configService.get<string>('JWT_ACCESS_SECRET') || 'dev-secret'),
       });
     } catch {
       throw new ForbiddenException('Invalid or expired contract link');

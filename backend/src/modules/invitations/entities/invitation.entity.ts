@@ -7,8 +7,17 @@ export class Invitation extends BaseEntity {
   @Column()
   email: string;
 
-  @Column({ type: 'enum', enum: ['admin', 'manager', 'promoter', 'organizer'], default: 'manager' })
-  role: 'admin' | 'manager' | 'promoter' | 'organizer';
+  @Column({ type: 'enum', enum: ['admin', 'manager', 'promoter', 'organizer', 'artist'], default: 'manager' })
+  role: 'admin' | 'manager' | 'promoter' | 'organizer' | 'artist';
+
+  @Column({ type: 'enum', enum: ['fr', 'en', 'nl'], default: 'fr' })
+  language: 'fr' | 'en' | 'nl';
+
+  @Column({ type: 'char', name: 'linked_artist_id', nullable: true, length: 36 })
+  linkedArtistId: string | null;
+
+  @Column({ type: 'char', name: 'linked_presskit_id', nullable: true, length: 36 })
+  linkedPresskitId: string | null;
 
   @Column({ unique: true })
   token: string;

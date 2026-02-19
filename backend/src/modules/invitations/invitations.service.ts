@@ -20,7 +20,17 @@ export class InvitationsService {
     });
   }
 
-  async create(email: string, role: 'admin' | 'manager' | 'promoter' | 'organizer', invitedBy: string, inviterName: string): Promise<Invitation> {
+  async create(
+    email: string,
+    role: 'admin' | 'manager' | 'promoter' | 'organizer' | 'artist',
+    invitedBy: string,
+    inviterName: string,
+    options?: {
+      language?: 'fr' | 'en' | 'nl';
+      linkedArtistId?: string | null;
+      linkedPresskitId?: string | null;
+    },
+  ): Promise<Invitation> {
     const existing = await this.invitationRepo.findOne({
       where: { email, acceptedAt: IsNull() },
     });
@@ -42,10 +52,15 @@ export class InvitationsService {
       token,
       invitedBy,
       expiresAt,
+      language: options?.language || 'fr',
+      linkedArtistId: options?.linkedArtistId || null,
+      linkedPresskitId: options?.linkedPresskitId || null,
     });
 
     const saved = await this.invitationRepo.save(invitation);
-    await this.notificationsService.sendInvitation(email, inviterName, token, role);
+    await this.notificationsService.sendInvitation(email, inviterName, token, role, {
+      language: saved.language,
+    });
     return saved;
   }
 

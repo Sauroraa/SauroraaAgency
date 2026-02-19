@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Delete, Param, Body, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Param, Body, Query, UseGuards, ForbiddenException } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { ArtistsService } from './artists.service';
 import { CreateArtistDto } from './dto/create-artist.dto';
@@ -49,14 +49,24 @@ export class ArtistsController {
   constructor(private readonly artistsService: ArtistsService) {}
 
   @Get()
-  @Roles('admin', 'manager', 'organizer')
-  findAll(@Query() filters: FilterArtistsDto) {
+  @Roles('admin', 'manager', 'organizer', 'artist')
+  async findAll(@Query() filters: FilterArtistsDto, @CurrentUser() user: any) {
+    if (user.role === 'artist') {
+      if (!user.linkedArtistId) {
+        return { items: [], total: 0, page: 1, limit: 20, totalPages: 0 };
+      }
+      const artist = await this.artistsService.findById(user.linkedArtistId);
+      return { items: [artist], total: 1, page: 1, limit: 20, totalPages: 1 };
+    }
     return this.artistsService.findAll(filters);
   }
 
   @Get(':id')
-  @Roles('admin', 'manager', 'organizer')
-  findOne(@Param('id') id: string) {
+  @Roles('admin', 'manager', 'organizer', 'artist')
+  findOne(@Param('id') id: string, @CurrentUser() user: any) {
+    if (user.role === 'artist' && user.linkedArtistId !== id) {
+      throw new ForbiddenException('You can only access your artist profile');
+    }
     return this.artistsService.findById(id);
   }
 

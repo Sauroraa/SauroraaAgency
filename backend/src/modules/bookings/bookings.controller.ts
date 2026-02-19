@@ -1,11 +1,13 @@
-import { Controller, Get, Post, Patch, Param, Body, Query, Req, UseGuards, StreamableFile, Header } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Param, Body, Query, Req, UseGuards, StreamableFile, Header, ForbiddenException } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { Request } from 'express';
 import { BookingsService } from './bookings.service';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
+import { RolesGuard } from '@/common/guards/roles.guard';
 import { CurrentUser } from '@/common/decorators/current-user.decorator';
 import { PaginationDto } from '@/common/dto/pagination.dto';
+import { Roles } from '@/common/decorators/roles.decorator';
 
 @ApiTags('Bookings (Public)')
 @Controller('public/bookings')
@@ -32,7 +34,7 @@ export class PublicBookingsController {
 @ApiTags('Bookings')
 @ApiBearerAuth()
 @Controller('bookings')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class BookingsController {
   constructor(private readonly bookingsService: BookingsService) {}
 
@@ -43,8 +45,11 @@ export class BookingsController {
   }
 
   @Get()
-  findAll(@Query() pagination: PaginationDto, @Query('status') status?: string) {
-    return this.bookingsService.findAll(pagination.page, pagination.limit, status);
+  @Roles('admin', 'manager', 'organizer', 'promoter', 'artist')
+  findAll(@Query() pagination: PaginationDto, @Query('status') status?: string, @CurrentUser() user?: any) {
+    const artistId = user?.role === 'artist' ? user?.linkedArtistId : undefined;
+    const requesterEmail = user?.role === 'promoter' ? user?.email : undefined;
+    return this.bookingsService.findAll(pagination.page, pagination.limit, status, artistId, requesterEmail);
   }
 
   @Get('export')
@@ -58,11 +63,20 @@ export class BookingsController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.bookingsService.findById(id);
+  @Roles('admin', 'manager', 'organizer', 'promoter', 'artist')
+  async findOne(@Param('id') id: string, @CurrentUser() user?: any) {
+    const booking = await this.bookingsService.findById(id);
+    if (user?.role === 'artist' && booking.artistId !== user?.linkedArtistId) {
+      throw new ForbiddenException('You can only access your own artist bookings');
+    }
+    if (user?.role === 'promoter' && booking.requesterEmail?.toLowerCase() !== user?.email?.toLowerCase()) {
+      throw new ForbiddenException('You can only access your own requests');
+    }
+    return booking;
   }
 
   @Patch(':id/status')
+  @Roles('admin', 'manager', 'organizer')
   updateStatus(
     @Param('id') id: string,
     @Body() body: { status: string; note?: string },
@@ -72,6 +86,7 @@ export class BookingsController {
   }
 
   @Post(':id/comments')
+  @Roles('admin', 'manager', 'organizer', 'artist')
   addComment(
     @Param('id') id: string,
     @Body() body: { content: string; isInternal?: boolean },
@@ -81,11 +96,13 @@ export class BookingsController {
   }
 
   @Patch(':id/assign')
+  @Roles('admin', 'manager')
   assign(@Param('id') id: string, @Body() body: { userId: string }) {
     return this.bookingsService.assignTo(id, body.userId);
   }
 
   @Post(':id/send-contract')
+  @Roles('admin', 'manager', 'organizer')
   sendContract(
     @Param('id') id: string,
     @Body() body: { quotedAmount?: number; quotePdfUrl?: string; customMessage?: string; expiresInHours?: number },

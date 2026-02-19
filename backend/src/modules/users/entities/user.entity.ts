@@ -17,11 +17,44 @@ export class User extends BaseEntity {
   @Column({ name: 'last_name', length: 100 })
   lastName: string;
 
-  @Column({ type: 'enum', enum: ['admin', 'manager', 'promoter', 'organizer'], default: 'manager' })
-  role: 'admin' | 'manager' | 'promoter' | 'organizer';
+  @Column({ type: 'enum', enum: ['admin', 'manager', 'promoter', 'organizer', 'artist'], default: 'manager' })
+  role: 'admin' | 'manager' | 'promoter' | 'organizer' | 'artist';
 
   @Column({ type: 'varchar', name: 'avatar_url', nullable: true, length: 500 })
   avatarUrl: string | null;
+
+  @Column({ type: 'date', name: 'birth_date', nullable: true })
+  birthDate: Date | null;
+
+  @Column({ type: 'varchar', name: 'phone', nullable: true, length: 50 })
+  phone: string | null;
+
+  @Column({ type: 'varchar', name: 'address_line1', nullable: true, length: 255 })
+  addressLine1: string | null;
+
+  @Column({ type: 'varchar', name: 'address_line2', nullable: true, length: 255 })
+  addressLine2: string | null;
+
+  @Column({ type: 'varchar', name: 'postal_code', nullable: true, length: 30 })
+  postalCode: string | null;
+
+  @Column({ type: 'varchar', name: 'city', nullable: true, length: 120 })
+  city: string | null;
+
+  @Column({ type: 'varchar', name: 'country', nullable: true, length: 120 })
+  country: string | null;
+
+  @Column({ type: 'varchar', name: 'company_name', nullable: true, length: 200 })
+  companyName: string | null;
+
+  @Column({ type: 'varchar', name: 'vat_number', nullable: true, length: 100 })
+  vatNumber: string | null;
+
+  @Column({ type: 'char', name: 'linked_artist_id', nullable: true, length: 36 })
+  linkedArtistId: string | null;
+
+  @Column({ type: 'char', name: 'linked_presskit_id', nullable: true, length: 36 })
+  linkedPresskitId: string | null;
 
   @Column({ name: 'is_active', default: true })
   isActive: boolean;

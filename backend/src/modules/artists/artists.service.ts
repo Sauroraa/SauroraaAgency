@@ -127,6 +127,7 @@ export class ArtistsService {
       stagePlotUrl,
       inputListUrl,
       accountEmail,
+      accountLanguage,
       ...artistPayload
     } = dto;
 
@@ -157,6 +158,8 @@ export class ArtistsService {
         await this.mediaRepo.save(mediaRows);
       }
     }
+
+    let createdPresskitId: string | null = null;
 
     if ((createPresskit ?? true) && createdById) {
       const defaultSections: any[] = [];
@@ -230,7 +233,7 @@ export class ArtistsService {
         ? presskitSections
         : defaultSections;
 
-      await this.presskitRepo.save(
+      const createdPresskit = await this.presskitRepo.save(
         this.presskitRepo.create({
           artistId: savedArtist.id,
           createdById,
@@ -241,10 +244,15 @@ export class ArtistsService {
           status: 'draft',
         }),
       );
+      createdPresskitId = createdPresskit.id;
     }
 
     if (accountEmail && createdById) {
-      await this.invitationsService.create(accountEmail, 'promoter', createdById, inviterName);
+      await this.invitationsService.create(accountEmail, 'artist', createdById, inviterName, {
+        language: accountLanguage || 'fr',
+        linkedArtistId: savedArtist.id,
+        linkedPresskitId: createdPresskitId,
+      });
     }
 
     return this.findById(savedArtist.id);

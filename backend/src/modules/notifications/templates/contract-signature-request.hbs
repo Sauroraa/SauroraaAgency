@@ -1,20 +1,19 @@
-<html>
-  <body style="font-family: Arial, sans-serif; color: #111827;">
-    <h2>Signature requise</h2>
-    <p>Bonjour {{booking.requesterName}},</p>
-    <p>Votre contrat est prêt pour la demande <strong>{{booking.referenceCode}}</strong>.</p>
-    <p>Artiste: <strong>{{booking.artist.name}}</strong></p>
-    <p>Evénement: <strong>{{booking.eventName}}</strong></p>
-    {{#if booking.quotedAmount}}
-    <p>Montant: <strong>{{booking.quotedAmount}} {{booking.budgetCurrency}}</strong></p>
-    {{/if}}
-    {{#if customMessage}}
-    <p>{{customMessage}}</p>
-    {{/if}}
-    <p>
-      <a href="{{signingUrl}}" style="display:inline-block;padding:10px 16px;background:#0891b2;color:#fff;text-decoration:none;border-radius:6px;">
-        Signer le contrat
-      </a>
-    </p>
+<!doctype html>
+<html lang="fr">
+  <head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>Signature du contrat requise</title></head>
+  <body style="margin:0;padding:0;background:#06080f;font-family:Arial,Helvetica,sans-serif;color:#eaf0ff;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#06080f;padding:28px 12px;"><tr><td align="center">
+      <table role="presentation" width="640" cellspacing="0" cellpadding="0" style="max-width:640px;background:#0b0f1b;border:1px solid #1f2840;border-radius:16px;overflow:hidden;">
+        <tr><td style="padding:24px 28px;background:linear-gradient(135deg,#00d4ff 0%,#7b2fbe 100%);"><div style="font-size:24px;font-weight:800;letter-spacing:2px;color:#fff;">SAURORAA</div><div style="margin-top:6px;font-size:12px;letter-spacing:1.2px;text-transform:uppercase;color:#d9f7ff;">Contract Signature</div></td></tr>
+        <tr><td style="padding:28px;">
+          <h1 style="margin:0 0 12px;font-size:24px;color:#fff;">Signature requise</h1>
+          <p style="margin:0 0 12px;font-size:15px;line-height:1.6;color:#c7d2f0;">Bonjour {{booking.requesterName}}, votre contrat est pret pour <strong style="color:#fff;">{{booking.referenceCode}}</strong>.</p>
+          <p style="margin:0 0 16px;font-size:14px;line-height:1.7;color:#aeb9db;">Artiste: <strong style="color:#fff;">{{booking.artist.name}}</strong><br/>Evenement: <strong style="color:#fff;">{{booking.eventName}}</strong>{{#if booking.quotedAmount}}<br/>Montant: <strong style="color:#8ee9ff;">{{booking.quotedAmount}} {{booking.budgetCurrency}}</strong>{{/if}}</p>
+          {{#if customMessage}}<p style="margin:0 0 16px;font-size:14px;line-height:1.7;color:#c7d2f0;">{{customMessage}}</p>{{/if}}
+          <table role="presentation" cellspacing="0" cellpadding="0" style="margin:22px 0;"><tr><td style="border-radius:10px;background:linear-gradient(135deg,#00d4ff 0%,#7b2fbe 100%);"><a href="{{signingUrl}}" style="display:inline-block;padding:14px 22px;color:#ffffff;text-decoration:none;font-weight:700;font-size:14px;">Signer le contrat</a></td></tr></table>
+        </td></tr>
+        <tr><td style="padding:18px 28px;border-top:1px solid #1f2840;color:#7d89ad;font-size:12px;line-height:1.6;">Sauroraa Agency<br/>Liege, Belgique<br/>booking@sauroraa.be</td></tr>
+      </table>
+    </td></tr></table>
   </body>
 </html>

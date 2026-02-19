@@ -135,6 +135,11 @@ export class CreateArtistDto {
   @IsEmail()
   accountEmail?: string;
 
+  @ApiPropertyOptional({ enum: ['fr', 'en', 'nl'] })
+  @IsOptional()
+  @IsEnum(['fr', 'en', 'nl'])
+  accountLanguage?: 'fr' | 'en' | 'nl';
+
   @ApiPropertyOptional({ type: [CreateArtistMediaDto] })
   @IsOptional()
   @IsArray()

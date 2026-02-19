@@ -1,11 +1,13 @@
-import { Controller, Get, Post, Patch, Delete, Param, Body, Query, Req, UseGuards, StreamableFile, Header } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Param, Body, Query, Req, UseGuards, StreamableFile, Header, ForbiddenException } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { Request } from 'express';
 import { PresskitsService } from './presskits.service';
 import { CreatePresskitDto, GenerateLinkDto } from './dto/create-presskit.dto';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
+import { RolesGuard } from '@/common/guards/roles.guard';
 import { CurrentUser } from '@/common/decorators/current-user.decorator';
 import { PaginationDto } from '@/common/dto/pagination.dto';
+import { Roles } from '@/common/decorators/roles.decorator';
 
 // Public endpoints (token-gated)
 @ApiTags('Presskits (Public)')
@@ -46,47 +48,72 @@ export class PublicPresskitsController {
 @ApiTags('Presskits')
 @ApiBearerAuth()
 @Controller('presskits')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class PresskitsController {
   constructor(private readonly presskitsService: PresskitsService) {}
 
   @Get()
-  findAll(@Query() pagination: PaginationDto, @Query('artistId') artistId?: string) {
-    return this.presskitsService.findAll(pagination.page, pagination.limit, artistId);
+  @Roles('admin', 'manager', 'organizer', 'artist')
+  findAll(@Query() pagination: PaginationDto, @Query('artistId') artistId?: string, @CurrentUser() user?: any) {
+    const scopedArtistId = user?.role === 'artist' ? user?.linkedArtistId : artistId;
+    return this.presskitsService.findAll(pagination.page, pagination.limit, scopedArtistId);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.presskitsService.findById(id);
+  @Roles('admin', 'manager', 'organizer', 'artist')
+  async findOne(@Param('id') id: string, @CurrentUser() user?: any) {
+    const presskit = await this.presskitsService.findById(id);
+    if (user?.role === 'artist') {
+      const allowedByPresskit = user?.linkedPresskitId && user.linkedPresskitId === id;
+      const allowedByArtist = user?.linkedArtistId && presskit.artistId === user.linkedArtistId;
+      if (!allowedByPresskit && !allowedByArtist) {
+        throw new ForbiddenException('You can only access your own presskit');
+      }
+    }
+    return presskit;
   }
 
   @Post()
+  @Roles('admin', 'manager', 'organizer')
   create(@Body() dto: CreatePresskitDto, @CurrentUser('id') userId: string) {
     return this.presskitsService.create(dto, userId);
   }
 
   @Patch(':id')
+  @Roles('admin', 'manager', 'organizer')
   update(@Param('id') id: string, @Body() dto: Partial<CreatePresskitDto>) {
     return this.presskitsService.update(id, dto);
   }
 
   @Delete(':id')
+  @Roles('admin', 'manager')
   delete(@Param('id') id: string) {
     return this.presskitsService.delete(id);
   }
 
   @Post(':id/generate-link')
+  @Roles('admin', 'manager', 'organizer')
   generateLink(@Param('id') id: string, @Body() dto: GenerateLinkDto) {
     return this.presskitsService.generateLink(id, dto);
   }
 
   @Patch(':id/links/:linkId/revoke')
+  @Roles('admin', 'manager', 'organizer')
   revokeLink(@Param('id') id: string, @Param('linkId') linkId: string) {
     return this.presskitsService.revokeLink(id, linkId);
   }
 
   @Get(':id/analytics')
-  getAnalytics(@Param('id') id: string) {
+  @Roles('admin', 'manager', 'organizer', 'artist')
+  async getAnalytics(@Param('id') id: string, @CurrentUser() user?: any) {
+    if (user?.role === 'artist') {
+      const presskit = await this.presskitsService.findById(id);
+      const allowedByPresskit = user?.linkedPresskitId && user.linkedPresskitId === id;
+      const allowedByArtist = user?.linkedArtistId && presskit.artistId === user.linkedArtistId;
+      if (!allowedByPresskit && !allowedByArtist) {
+        throw new ForbiddenException('You can only access your own presskit analytics');
+      }
+    }
     return this.presskitsService.getAnalytics(id);
   }
 }

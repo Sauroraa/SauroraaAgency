@@ -1,41 +1,24 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <style>
-    body { font-family: 'Helvetica Neue', sans-serif; background: #0a0a0a; color: #e0e0e0; padding: 40px; }
-    .container { max-width: 600px; margin: 0 auto; background: #111; border-radius: 12px; padding: 40px; }
-    .logo { text-align: center; margin-bottom: 30px; }
-    .logo h1 { background: linear-gradient(135deg, #00d4ff, #7b2fbe); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 28px; }
-    h2 { color: #fff; font-size: 22px; }
-    .ref { color: #00d4ff; font-family: monospace; font-size: 18px; }
-    .detail { padding: 8px 0; border-bottom: 1px solid #222; }
-    .label { color: #8a8a8a; font-size: 13px; text-transform: uppercase; }
-    .value { color: #fff; font-size: 15px; margin-top: 4px; }
-    .footer { text-align: center; color: #5c5c5c; font-size: 12px; margin-top: 30px; }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <div class="logo"><h1>SAURORAA</h1></div>
-    <h2>Booking Request Received</h2>
-    <p>Thank you for your interest. Your booking request has been registered.</p>
-    <p>Reference: <span class="ref">{{booking.referenceCode}}</span></p>
-    <div class="detail">
-      <div class="label">Event</div>
-      <div class="value">{{booking.eventName}}</div>
-    </div>
-    <div class="detail">
-      <div class="label">Date</div>
-      <div class="value">{{booking.eventDate}}</div>
-    </div>
-    <div class="detail">
-      <div class="label">Location</div>
-      <div class="value">{{booking.eventCity}}, {{booking.eventCountry}}</div>
-    </div>
-    <p>Our team will review your request and get back to you shortly.</p>
-    <div class="footer">
-      <p>&copy; Sauroraa Agency — agency.sauroraa.be</p>
-    </div>
-  </div>
-</body>
+<!doctype html>
+<html lang="fr">
+  <head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>Demande de booking recue</title></head>
+  <body style="margin:0;padding:0;background:#06080f;font-family:Arial,Helvetica,sans-serif;color:#eaf0ff;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#06080f;padding:28px 12px;">
+      <tr><td align="center">
+        <table role="presentation" width="640" cellspacing="0" cellpadding="0" style="max-width:640px;background:#0b0f1b;border:1px solid #1f2840;border-radius:16px;overflow:hidden;">
+          <tr><td style="padding:24px 28px;background:linear-gradient(135deg,#00d4ff 0%,#7b2fbe 100%);"><div style="font-size:24px;font-weight:800;letter-spacing:2px;color:#fff;">SAURORAA</div><div style="margin-top:6px;font-size:12px;letter-spacing:1.2px;text-transform:uppercase;color:#d9f7ff;">Booking Desk</div></td></tr>
+          <tr><td style="padding:28px;">
+            <h1 style="margin:0 0 12px;font-size:24px;color:#fff;">Demande de booking recue</h1>
+            <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#c7d2f0;">Votre demande a bien ete enregistree. Notre equipe revient vers vous rapidement.</p>
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border:1px solid #283252;border-radius:10px;overflow:hidden;">
+              <tr><td style="padding:12px 14px;border-bottom:1px solid #283252;color:#93a1c7;font-size:12px;text-transform:uppercase;">Reference</td><td style="padding:12px 14px;border-bottom:1px solid #283252;color:#8ee9ff;font-weight:700;font-family:monospace;">{{booking.referenceCode}}</td></tr>
+              <tr><td style="padding:12px 14px;border-bottom:1px solid #283252;color:#93a1c7;font-size:12px;text-transform:uppercase;">Evenement</td><td style="padding:12px 14px;border-bottom:1px solid #283252;color:#fff;">{{booking.eventName}}</td></tr>
+              <tr><td style="padding:12px 14px;border-bottom:1px solid #283252;color:#93a1c7;font-size:12px;text-transform:uppercase;">Date</td><td style="padding:12px 14px;border-bottom:1px solid #283252;color:#fff;">{{booking.eventDate}}</td></tr>
+              <tr><td style="padding:12px 14px;color:#93a1c7;font-size:12px;text-transform:uppercase;">Lieu</td><td style="padding:12px 14px;color:#fff;">{{booking.eventCity}}, {{booking.eventCountry}}</td></tr>
+            </table>
+          </td></tr>
+          <tr><td style="padding:18px 28px;border-top:1px solid #1f2840;color:#7d89ad;font-size:12px;line-height:1.6;">Sauroraa Agency<br/>Liege, Belgique<br/>booking@sauroraa.be</td></tr>
+        </table>
+      </td></tr>
+    </table>
+  </body>
 </html>

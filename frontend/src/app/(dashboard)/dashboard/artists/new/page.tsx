@@ -54,6 +54,7 @@ export default function NewArtistPage() {
     profileImageUrl: '',
     coverImageUrl: '',
     accountEmail: '',
+    accountLanguage: 'fr',
     technicalRider: '',
     hospitalityRider: '',
     stagePlotUrl: '',
@@ -110,6 +111,7 @@ export default function NewArtistPage() {
         profileImageUrl: form.profileImageUrl,
         coverImageUrl: form.coverImageUrl,
         accountEmail: form.accountEmail,
+        accountLanguage: form.accountLanguage,
         technicalRider: form.technicalRider,
         hospitalityRider: form.hospitalityRider,
         stagePlotUrl: form.stagePlotUrl,
@@ -336,6 +338,18 @@ export default function NewArtistPage() {
               onChange={(e) => updateField('accountEmail', e.target.value)}
               placeholder="artist@email.com"
             />
+            <div className="space-y-1.5">
+              <label className="block text-sm font-medium text-[var(--text-secondary)]">Langue invitation artiste</label>
+              <select
+                value={form.accountLanguage}
+                onChange={(e) => updateField('accountLanguage', e.target.value)}
+                className="w-full px-4 py-2.5 rounded-lg bg-dark-800 border border-dark-500 text-sm outline-none focus:border-aurora-cyan"
+              >
+                <option value="fr">Francais</option>
+                <option value="en">English</option>
+                <option value="nl">Nederlands</option>
+              </select>
+            </div>
           </div>
 
           <div className="space-y-3">

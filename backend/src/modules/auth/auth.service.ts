@@ -28,7 +28,18 @@ export class AuthService {
       firstName: user.firstName,
       lastName: user.lastName,
       role: user.role,
-      avatarUrl: user.avatarUrl,
+      avatarUrl: user.avatarUrl ?? undefined,
+      birthDate: user.birthDate,
+      phone: user.phone,
+      addressLine1: user.addressLine1,
+      addressLine2: user.addressLine2,
+      postalCode: user.postalCode,
+      city: user.city,
+      country: user.country,
+      companyName: user.companyName,
+      vatNumber: user.vatNumber,
+      linkedArtistId: user.linkedArtistId,
+      linkedPresskitId: user.linkedPresskitId,
     };
   }
 
@@ -74,6 +85,17 @@ export class AuthService {
       firstName: dto.firstName,
       lastName: dto.lastName,
       role: invitation.role,
+      birthDate: dto.birthDate,
+      phone: dto.phone,
+      addressLine1: dto.addressLine1,
+      addressLine2: dto.addressLine2,
+      postalCode: dto.postalCode,
+      city: dto.city,
+      country: dto.country,
+      companyName: dto.companyName,
+      vatNumber: dto.vatNumber,
+      linkedArtistId: invitation.linkedArtistId || undefined,
+      linkedPresskitId: invitation.linkedPresskitId || undefined,
     });
 
     await this.invitationsService.markAccepted(dto.invitationToken);
@@ -140,9 +162,20 @@ export class AuthService {
       firstName: user.firstName,
       lastName: user.lastName,
       role: user.role,
-      avatarUrl: user.avatarUrl,
+      avatarUrl: user.avatarUrl ?? undefined,
       twoFactorEnabled: user.twoFactorEnabled,
       lastLoginAt: user.lastLoginAt,
+      birthDate: user.birthDate,
+      phone: user.phone,
+      addressLine1: user.addressLine1,
+      addressLine2: user.addressLine2,
+      postalCode: user.postalCode,
+      city: user.city,
+      country: user.country,
+      companyName: user.companyName,
+      vatNumber: user.vatNumber,
+      linkedArtistId: user.linkedArtistId,
+      linkedPresskitId: user.linkedPresskitId,
     };
   }
 
@@ -151,11 +184,29 @@ export class AuthService {
     if (dto.firstName !== undefined) user.firstName = dto.firstName.trim();
     if (dto.lastName !== undefined) user.lastName = dto.lastName.trim();
     if (dto.avatarUrl !== undefined) user.avatarUrl = dto.avatarUrl.trim() || null;
+    if (dto.birthDate !== undefined) user.birthDate = dto.birthDate ? new Date(dto.birthDate) : null;
+    if (dto.phone !== undefined) user.phone = dto.phone.trim() || null;
+    if (dto.addressLine1 !== undefined) user.addressLine1 = dto.addressLine1.trim() || null;
+    if (dto.addressLine2 !== undefined) user.addressLine2 = dto.addressLine2.trim() || null;
+    if (dto.postalCode !== undefined) user.postalCode = dto.postalCode.trim() || null;
+    if (dto.city !== undefined) user.city = dto.city.trim() || null;
+    if (dto.country !== undefined) user.country = dto.country.trim() || null;
+    if (dto.companyName !== undefined) user.companyName = dto.companyName.trim() || null;
+    if (dto.vatNumber !== undefined) user.vatNumber = dto.vatNumber.trim() || null;
 
     const updated = await this.usersService.update(userId, {
       firstName: user.firstName,
       lastName: user.lastName,
-      avatarUrl: user.avatarUrl,
+      avatarUrl: user.avatarUrl ?? undefined,
+      birthDate: user.birthDate ? user.birthDate.toISOString().slice(0, 10) : undefined,
+      phone: user.phone || undefined,
+      addressLine1: user.addressLine1 || undefined,
+      addressLine2: user.addressLine2 || undefined,
+      postalCode: user.postalCode || undefined,
+      city: user.city || undefined,
+      country: user.country || undefined,
+      companyName: user.companyName || undefined,
+      vatNumber: user.vatNumber || undefined,
     });
 
     return this.serializeUser(updated);

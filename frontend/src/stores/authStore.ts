@@ -6,8 +6,19 @@ interface User {
   email: string;
   firstName: string;
   lastName: string;
-  role: 'admin' | 'manager' | 'promoter' | 'organizer';
+  role: 'admin' | 'manager' | 'promoter' | 'organizer' | 'artist';
   avatarUrl: string | null;
+  birthDate?: string | null;
+  phone?: string | null;
+  addressLine1?: string | null;
+  addressLine2?: string | null;
+  postalCode?: string | null;
+  city?: string | null;
+  country?: string | null;
+  companyName?: string | null;
+  vatNumber?: string | null;
+  linkedArtistId?: string | null;
+  linkedPresskitId?: string | null;
 }
 
 interface AuthState {

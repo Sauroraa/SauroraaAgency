@@ -47,6 +47,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       '/dashboard/presskits',
       '/dashboard/settings',
     ];
+    const artistAllowed = [
+      '/dashboard',
+      '/dashboard/artists',
+      '/dashboard/bookings',
+      '/dashboard/presskits',
+      '/dashboard/settings',
+    ];
 
     if (isAdmin) return;
 
@@ -64,6 +71,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
     if (user.role === 'organizer') {
       const allowed = organizerAllowed.some((prefix) => path === prefix || path.startsWith(`${prefix}/`));
+      if (!allowed) router.replace('/dashboard');
+      return;
+    }
+
+    if (user.role === 'artist') {
+      const allowed = artistAllowed.some((prefix) => path === prefix || path.startsWith(`${prefix}/`));
       if (!allowed) router.replace('/dashboard');
     }
   }, [user, accessToken, refreshToken, hasHydrated, router]);

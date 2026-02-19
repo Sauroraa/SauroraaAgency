@@ -1,20 +1,17 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <style>
-    body { font-family: 'Helvetica Neue', sans-serif; background: #0a0a0a; color: #e0e0e0; padding: 40px; }
-    .container { max-width: 600px; margin: 0 auto; background: #111; border-radius: 12px; padding: 40px; }
-    .logo h1 { background: linear-gradient(135deg, #00d4ff, #7b2fbe); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 28px; text-align: center; }
-    .footer { text-align: center; color: #5c5c5c; font-size: 12px; margin-top: 30px; }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <div class="logo"><h1>SAURORAA</h1></div>
-    <h2>Presskit Downloaded</h2>
-    <p>The presskit for <strong>{{artistName}}</strong> has been downloaded.</p>
-    {{#if viewerInfo.ip}}<p>IP: {{viewerInfo.ip}}</p>{{/if}}
-    <div class="footer"><p>&copy; Sauroraa Agency</p></div>
-  </div>
-</body>
+<!doctype html>
+<html lang="fr">
+  <head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>Presskit telecharge</title></head>
+  <body style="margin:0;padding:0;background:#06080f;font-family:Arial,Helvetica,sans-serif;color:#eaf0ff;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#06080f;padding:28px 12px;"><tr><td align="center">
+      <table role="presentation" width="640" cellspacing="0" cellpadding="0" style="max-width:640px;background:#0b0f1b;border:1px solid #1f2840;border-radius:16px;overflow:hidden;">
+        <tr><td style="padding:24px 28px;background:linear-gradient(135deg,#00d4ff 0%,#7b2fbe 100%);"><div style="font-size:24px;font-weight:800;letter-spacing:2px;color:#fff;">SAURORAA</div><div style="margin-top:6px;font-size:12px;letter-spacing:1.2px;text-transform:uppercase;color:#d9f7ff;">Presskit Alert</div></td></tr>
+        <tr><td style="padding:28px;">
+          <h1 style="margin:0 0 12px;font-size:24px;color:#fff;">Presskit telecharge</h1>
+          <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#c7d2f0;">Le presskit de <strong style="color:#fff;">{{artistName}}</strong> vient d etre telecharge.</p>
+          <p style="margin:0;font-size:14px;color:#aeb9db;">{{#if downloadInfo.country}}Pays: {{downloadInfo.country}}<br/>{{/if}}{{#if downloadInfo.ip}}IP: {{downloadInfo.ip}}{{/if}}{{#if viewerInfo.ip}}IP: {{viewerInfo.ip}}{{/if}}</p>
+        </td></tr>
+        <tr><td style="padding:18px 28px;border-top:1px solid #1f2840;color:#7d89ad;font-size:12px;line-height:1.6;">Sauroraa Agency<br/>Liege, Belgique<br/>contact@sauroraa.be</td></tr>
+      </table>
+    </td></tr></table>
+  </body>
 </html>

@@ -10,11 +10,17 @@ import { CurrentUser } from '@/common/decorators/current-user.decorator';
 @Controller('files')
 @UseGuards(JwtAuthGuard)
 export class FilesController {
+  private static readonly MAX_UPLOAD_SIZE_BYTES = 200 * 1024 * 1024;
+
   constructor(private readonly filesService: FilesService) {}
 
   @Post('upload')
   @ApiConsumes('multipart/form-data')
-  @UseInterceptors(FileInterceptor('file', { limits: { fileSize: 50 * 1024 * 1024 } }))
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: { fileSize: FilesController.MAX_UPLOAD_SIZE_BYTES },
+    }),
+  )
   async upload(
     @UploadedFile() file: Express.Multer.File,
     @Query('bucket') bucket: string,

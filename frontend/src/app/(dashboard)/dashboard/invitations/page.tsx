@@ -16,7 +16,10 @@ export default function InvitationsPage() {
   const addToast = useToastStore((s) => s.addToast);
   const [showModal, setShowModal] = useState(false);
   const [email, setEmail] = useState('');
-  const [role, setRole] = useState<'manager' | 'admin' | 'promoter' | 'organizer'>('manager');
+  const [role, setRole] = useState<'manager' | 'admin' | 'promoter' | 'organizer' | 'artist'>('manager');
+  const [language, setLanguage] = useState<'fr' | 'en' | 'nl'>('fr');
+  const [linkedArtistId, setLinkedArtistId] = useState('');
+  const [linkedPresskitId, setLinkedPresskitId] = useState('');
 
   const { data: invitations } = useQuery({
     queryKey: ['invitations'],
@@ -28,13 +31,23 @@ export default function InvitationsPage() {
 
   const createMutation = useMutation({
     mutationFn: async () => {
-      await api.post('/invitations', { email, role });
+      await api.post('/invitations', {
+        email,
+        role,
+        language,
+        ...(linkedArtistId.trim() ? { linkedArtistId: linkedArtistId.trim() } : {}),
+        ...(linkedPresskitId.trim() ? { linkedPresskitId: linkedPresskitId.trim() } : {}),
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['invitations'] });
       addToast('success', 'Invitation sent');
       setShowModal(false);
       setEmail('');
+      setRole('manager');
+      setLanguage('fr');
+      setLinkedArtistId('');
+      setLinkedPresskitId('');
     },
     onError: (error: any) => {
       const message = error?.response?.data?.message;
@@ -68,6 +81,7 @@ export default function InvitationsPage() {
             <tr className="border-b border-[var(--border-color)] bg-dark-800/30">
               <th className="text-left py-3 px-6 text-[var(--text-muted)] font-medium">Email</th>
               <th className="text-left py-3 px-6 text-[var(--text-muted)] font-medium">Role</th>
+              <th className="text-left py-3 px-6 text-[var(--text-muted)] font-medium">Lang</th>
               <th className="text-left py-3 px-6 text-[var(--text-muted)] font-medium">Status</th>
               <th className="text-left py-3 px-6 text-[var(--text-muted)] font-medium">Expires</th>
               <th className="text-right py-3 px-6 text-[var(--text-muted)] font-medium">Actions</th>
@@ -77,7 +91,8 @@ export default function InvitationsPage() {
             {(invitations || []).map((inv: any) => (
               <tr key={inv.id} className="border-b border-[var(--border-color)]">
                 <td className="py-3 px-6 flex items-center gap-2"><Mail size={14} className="text-[var(--text-muted)]" /> {inv.email}</td>
-                <td className="py-3 px-6"><Badge variant={inv.role === 'admin' ? 'info' : inv.role === 'promoter' ? 'warning' : inv.role === 'organizer' ? 'info' : 'default'}>{inv.role}</Badge></td>
+                <td className="py-3 px-6"><Badge variant={inv.role === 'admin' ? 'info' : inv.role === 'promoter' ? 'warning' : inv.role === 'organizer' ? 'info' : inv.role === 'artist' ? 'success' : 'default'}>{inv.role}</Badge></td>
+                <td className="py-3 px-6 text-[var(--text-muted)] uppercase">{inv.language || 'fr'}</td>
                 <td className="py-3 px-6">
                   <Badge variant={inv.acceptedAt ? 'success' : new Date(inv.expiresAt) < new Date() ? 'danger' : 'warning'}>
                     {inv.acceptedAt ? 'Accepted' : new Date(inv.expiresAt) < new Date() ? 'Expired' : 'Pending'}
@@ -106,9 +121,24 @@ export default function InvitationsPage() {
               <option value="manager">Manager</option>
               <option value="promoter">Promoter</option>
               <option value="organizer">Organizer</option>
+              <option value="artist">Artist</option>
               <option value="admin">Admin</option>
             </select>
           </div>
+          <div className="space-y-1.5">
+            <label className="block text-sm font-medium text-[var(--text-secondary)]">Language</label>
+            <select value={language} onChange={(e) => setLanguage(e.target.value as any)} className="w-full px-4 py-2.5 rounded-lg bg-dark-800 border border-dark-500 text-sm outline-none">
+              <option value="fr">Francais</option>
+              <option value="en">English</option>
+              <option value="nl">Nederlands</option>
+            </select>
+          </div>
+          {role === 'artist' && (
+            <>
+              <Input label="Linked Artist ID (optional)" value={linkedArtistId} onChange={(e) => setLinkedArtistId(e.target.value)} />
+              <Input label="Linked Presskit ID (optional)" value={linkedPresskitId} onChange={(e) => setLinkedPresskitId(e.target.value)} />
+            </>
+          )}
           <Button onClick={() => createMutation.mutate()} isLoading={createMutation.isPending} className="w-full">
             <Mail size={16} /> Send Invitation
           </Button>

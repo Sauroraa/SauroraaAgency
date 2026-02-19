@@ -103,13 +103,44 @@ export class NotificationsService {
     );
   }
 
-  async sendInvitation(email: string, inviterName: string, token: string, role: string): Promise<void> {
+  async sendInvitation(
+    email: string,
+    inviterName: string,
+    token: string,
+    role: string,
+    options?: { language?: 'fr' | 'en' | 'nl' },
+  ): Promise<void> {
+    const language = options?.language || 'fr';
     const registerUrl = `${this.config.get('APP_URL')}/register?token=${token}`;
+    const copy = {
+      fr: {
+        subject: 'Invitation Sauroraa Agency',
+        title: 'Vous etes invite(e)',
+        cta: 'Completer mon compte',
+        expiry: 'Cette invitation expire dans 7 jours.',
+        intro: `${inviterName} vous invite a rejoindre Sauroraa Agency en tant que ${role.toUpperCase()}.`,
+      },
+      en: {
+        subject: 'Sauroraa Agency Invitation',
+        title: 'You are invited',
+        cta: 'Complete my account',
+        expiry: 'This invitation expires in 7 days.',
+        intro: `${inviterName} invited you to join Sauroraa Agency as ${role.toUpperCase()}.`,
+      },
+      nl: {
+        subject: 'Uitnodiging Sauroraa Agency',
+        title: 'Je bent uitgenodigd',
+        cta: 'Mijn account voltooien',
+        expiry: 'Deze uitnodiging verloopt binnen 7 dagen.',
+        intro: `${inviterName} nodigt je uit bij Sauroraa Agency als ${role.toUpperCase()}.`,
+      },
+    }[language];
+
     await this.sendEmail(
       email,
-      'You are invited to Sauroraa Agency',
+      copy.subject,
       'invitation',
-      { inviterName, registerUrl, role },
+      { inviterName, registerUrl, role, copy, language },
     );
   }
 

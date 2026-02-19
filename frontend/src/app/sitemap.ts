@@ -16,11 +16,11 @@ async function fetchArtistSlugs(): Promise<string[]> {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const staticRoutes = ['', '/artists', '/curated', '/about', '/contact'].map((path) => ({
+  const staticRoutes = ['', '/artists', '/curated', '/about', '/contact', '/mentions-legales'].map((path) => ({
     url: `${SITE_URL}${path}`,
     lastModified: new Date(),
     changeFrequency: 'weekly' as const,
-    priority: path === '' ? 1 : 0.8,
+    priority: path === '' ? 1 : path === '/mentions-legales' ? 0.4 : 0.8,
   }));
 
   const slugs = await fetchArtistSlugs();

@@ -29,10 +29,20 @@ export class InvitationsController {
   @Roles('admin')
   @ApiBearerAuth()
   create(
-    @Body() body: { email: string; role: 'admin' | 'manager' | 'promoter' | 'organizer' },
+    @Body() body: {
+      email: string;
+      role: 'admin' | 'manager' | 'promoter' | 'organizer' | 'artist';
+      language?: 'fr' | 'en' | 'nl';
+      linkedArtistId?: string;
+      linkedPresskitId?: string;
+    },
     @CurrentUser() user: any,
   ) {
-    return this.invitationsService.create(body.email, body.role, user.id, `${user.firstName} ${user.lastName}`);
+    return this.invitationsService.create(body.email, body.role, user.id, `${user.firstName} ${user.lastName}`, {
+      language: body.language || 'fr',
+      linkedArtistId: body.linkedArtistId || null,
+      linkedPresskitId: body.linkedPresskitId || null,
+    });
   }
 
   @Delete(':id')
