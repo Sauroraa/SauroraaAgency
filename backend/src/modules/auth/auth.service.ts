@@ -99,6 +99,7 @@ export class AuthService {
     });
 
     await this.invitationsService.markAccepted(dto.invitationToken);
+    await this.notificationsService.sendAccountConfirmation(user.email, `${user.firstName} ${user.lastName}`);
 
     const tokens = await this.generateTokens(user.id, user.email, user.role);
     const refreshHash = await hashPassword(tokens.refreshToken);

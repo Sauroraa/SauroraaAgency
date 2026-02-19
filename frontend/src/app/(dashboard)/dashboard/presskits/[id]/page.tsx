@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Link2, Copy, ExternalLink, Eye, EyeOff, BarChart3, Send, Trash2 } from 'lucide-react';
@@ -17,6 +17,7 @@ import { useToastStore } from '@/stores/toastStore';
 
 export default function PresskitDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const router = useRouter();
   const queryClient = useQueryClient();
   const addToast = useToastStore((s) => s.addToast);
   const [showShareModal, setShowShareModal] = useState(false);
@@ -66,6 +67,19 @@ export default function PresskitDetailPage() {
     },
   });
 
+  const deletePresskitMutation = useMutation({
+    mutationFn: async () => api.delete(`/presskits/${id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['presskits'] });
+      addToast('success', 'Presskit supprimé');
+      router.push('/dashboard/presskits');
+    },
+    onError: (error: any) => {
+      const message = error?.response?.data?.message;
+      addToast('error', Array.isArray(message) ? message[0] : (message || 'Impossible de supprimer le presskit'));
+    },
+  });
+
   const copyLink = (token: string) => {
     const url = `${window.location.origin}/presskit/${token}`;
     navigator.clipboard.writeText(url);
@@ -97,6 +111,17 @@ export default function PresskitDetailPage() {
             {presskit?.status}
           </Badge>
           <Button onClick={() => setShowShareModal(true)}><Link2 size={16} /> Share</Button>
+          <Button
+            variant="danger"
+            onClick={() => {
+              if (window.confirm('Supprimer définitivement ce presskit ?')) {
+                deletePresskitMutation.mutate();
+              }
+            }}
+            isLoading={deletePresskitMutation.isPending}
+          >
+            <Trash2 size={16} /> Delete
+          </Button>
         </div>
       </div>
 

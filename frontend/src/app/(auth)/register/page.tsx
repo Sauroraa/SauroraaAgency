@@ -43,6 +43,14 @@ function RegisterPageContent() {
     vatNumber: '',
   });
 
+  const normalizeBirthDate = (value: string) => {
+    if (!value) return value;
+    if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
+    const m = value.match(/^(\d{2})-(\d{2})-(\d{4})$/);
+    if (m) return `${m[3]}-${m[2]}-${m[1]}`;
+    return value;
+  };
+
   useEffect(() => {
     if (!emailFromQuery) return;
     setForm((prev) => ({ ...prev, email: emailFromQuery }));
@@ -93,7 +101,10 @@ function RegisterPageContent() {
     setIsLoading(true);
     try {
       const { data } = await publicApi.post('/auth/register', {
-        ...form, invitationToken: token,
+        ...form,
+        email: form.email.trim(),
+        birthDate: normalizeBirthDate(form.birthDate),
+        invitationToken: token,
       });
       const result = data.data || data;
       setAuth(result.user, result.accessToken, result.refreshToken);

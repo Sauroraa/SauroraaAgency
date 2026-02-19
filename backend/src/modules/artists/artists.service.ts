@@ -274,6 +274,10 @@ export class ArtistsService {
 
   async delete(id: string): Promise<void> {
     const artist = await this.findById(id);
+    // Clean dependent data first to avoid FK constraint errors on artist deletion.
+    await this.bookingRepo.delete({ artistId: artist.id });
+    await this.presskitRepo.delete({ artistId: artist.id });
+    await this.mediaRepo.delete({ artistId: artist.id });
     await this.artistRepo.remove(artist);
   }
 

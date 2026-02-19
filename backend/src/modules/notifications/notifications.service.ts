@@ -32,6 +32,7 @@ export class NotificationsService {
       'presskit-viewed',
       'presskit-downloaded',
       'invitation',
+      'account-confirmation',
       'password-reset',
       'quote',
       'contract-signature-request',
@@ -151,6 +152,16 @@ export class NotificationsService {
       'Password Reset - Sauroraa Agency',
       'password-reset',
       { resetUrl },
+    );
+  }
+
+  async sendAccountConfirmation(email: string, fullName: string): Promise<void> {
+    const loginUrl = `${this.config.get('APP_URL')}/login`;
+    await this.sendEmail(
+      email,
+      'Compte cree - Sauroraa Agency',
+      'account-confirmation',
+      { fullName, loginUrl },
     );
   }
 
