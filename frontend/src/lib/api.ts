@@ -5,7 +5,6 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
 export const api = axios.create({
   baseURL: API_URL,
-  headers: { 'Content-Type': 'application/json' },
   withCredentials: true,
 });
 
@@ -46,5 +45,4 @@ api.interceptors.response.use(
 
 export const publicApi = axios.create({
   baseURL: API_URL,
-  headers: { 'Content-Type': 'application/json' },
 });
