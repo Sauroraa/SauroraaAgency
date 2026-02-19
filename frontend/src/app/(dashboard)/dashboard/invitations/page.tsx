@@ -36,7 +36,10 @@ export default function InvitationsPage() {
       setShowModal(false);
       setEmail('');
     },
-    onError: () => addToast('error', 'Failed to send invitation'),
+    onError: (error: any) => {
+      const message = error?.response?.data?.message;
+      addToast('error', Array.isArray(message) ? message[0] : (message || 'Failed to send invitation'));
+    },
   });
 
   const revokeMutation = useMutation({

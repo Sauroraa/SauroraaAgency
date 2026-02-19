@@ -34,10 +34,18 @@ export default function SettingsPage() {
 
   const updateProfile = useMutation({
     mutationFn: async () => {
+      const firstNameTrimmed = firstName.trim();
+      const lastNameTrimmed = lastName.trim();
+      const avatarUrlTrimmed = avatarUrl.trim();
+
+      if (!firstNameTrimmed || !lastNameTrimmed) {
+        throw new Error('missing_name');
+      }
+
       const res = await api.patch('/auth/profile', {
-        firstName,
-        lastName,
-        avatarUrl,
+        firstName: firstNameTrimmed,
+        lastName: lastNameTrimmed,
+        ...(avatarUrlTrimmed ? { avatarUrl: avatarUrlTrimmed } : {}),
       });
       return res.data.data || res.data;
     },
@@ -45,7 +53,11 @@ export default function SettingsPage() {
       hydrateUser(updatedUser);
       addToast('success', 'Profil mis à jour');
     },
-    onError: () => {
+    onError: (error: any) => {
+      if (error?.message === 'missing_name') {
+        addToast('warning', 'Prénom et nom sont requis');
+        return;
+      }
       addToast('error', 'Erreur lors de la mise à jour du profil');
     },
   });

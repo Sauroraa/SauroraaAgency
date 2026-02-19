@@ -24,7 +24,14 @@ export class InvitationsService {
     const existing = await this.invitationRepo.findOne({
       where: { email, acceptedAt: IsNull() },
     });
-    if (existing) throw new BadRequestException('Pending invitation already exists for this email');
+    if (existing) {
+      const now = new Date();
+      if (existing.expiresAt && existing.expiresAt < now) {
+        await this.invitationRepo.delete(existing.id);
+      } else {
+        throw new BadRequestException('Pending invitation already exists for this email');
+      }
+    }
 
     const token = uuidv4();
     const expiresAt = new Date(Date.now() + 7 * 24 * 3600000);
