@@ -52,6 +52,7 @@ export default function NewArtistPage() {
     metaDescription: '',
     profileImageUrl: '',
     coverImageUrl: '',
+    accountEmail: '',
     technicalRider: '',
     hospitalityRider: '',
     stagePlotUrl: '',
@@ -104,6 +105,7 @@ export default function NewArtistPage() {
         metaDescription: form.metaDescription,
         profileImageUrl: form.profileImageUrl,
         coverImageUrl: form.coverImageUrl,
+        accountEmail: form.accountEmail,
         technicalRider: form.technicalRider,
         hospitalityRider: form.hospitalityRider,
         stagePlotUrl: form.stagePlotUrl,
@@ -250,6 +252,13 @@ export default function NewArtistPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <Input label="Image profil (URL)" value={form.profileImageUrl} onChange={(e) => updateField('profileImageUrl', e.target.value)} />
             <Input label="Image cover (URL)" value={form.coverImageUrl} onChange={(e) => updateField('coverImageUrl', e.target.value)} />
+            <Input
+              label="Email compte artiste (invitation auto)"
+              type="email"
+              value={form.accountEmail}
+              onChange={(e) => updateField('accountEmail', e.target.value)}
+              placeholder="artist@email.com"
+            />
           </div>
 
           <div className="space-y-3">

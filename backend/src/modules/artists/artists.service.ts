@@ -9,6 +9,7 @@ import { Booking } from '@/modules/bookings/entities/booking.entity';
 import { Presskit } from '@/modules/presskits/entities/presskit.entity';
 import { CreateArtistDto } from './dto/create-artist.dto';
 import { FilterArtistsDto } from './dto/filter-artists.dto';
+import { InvitationsService } from '@/modules/invitations/invitations.service';
 
 @Injectable()
 export class ArtistsService {
@@ -23,6 +24,7 @@ export class ArtistsService {
     private readonly bookingRepo: Repository<Booking>,
     @InjectRepository(Presskit)
     private readonly presskitRepo: Repository<Presskit>,
+    private readonly invitationsService: InvitationsService,
   ) {}
 
   async findAllPublic(filters: FilterArtistsDto) {
@@ -112,7 +114,7 @@ export class ArtistsService {
     return artist;
   }
 
-  async create(dto: CreateArtistDto, createdById?: string): Promise<Artist> {
+  async create(dto: CreateArtistDto, createdById?: string, inviterName = 'Sauroraa Admin'): Promise<Artist> {
     const {
       genreIds,
       media,
@@ -124,6 +126,7 @@ export class ArtistsService {
       hospitalityRider,
       stagePlotUrl,
       inputListUrl,
+      accountEmail,
       ...artistPayload
     } = dto;
 
@@ -238,6 +241,10 @@ export class ArtistsService {
           status: 'draft',
         }),
       );
+    }
+
+    if (accountEmail && createdById) {
+      await this.invitationsService.create(accountEmail, 'promoter', createdById, inviterName);
     }
 
     return this.findById(savedArtist.id);

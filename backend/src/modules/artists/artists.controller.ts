@@ -62,8 +62,9 @@ export class ArtistsController {
 
   @Post()
   @Roles('admin')
-  create(@Body() dto: CreateArtistDto, @CurrentUser('id') userId: string) {
-    return this.artistsService.create(dto, userId);
+  create(@Body() dto: CreateArtistDto, @CurrentUser() user: any) {
+    const inviterName = `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || 'Sauroraa Admin';
+    return this.artistsService.create(dto, user.id, inviterName);
   }
 
   @Patch(':id')

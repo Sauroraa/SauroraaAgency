@@ -37,6 +37,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     const promoterAllowed = [
       '/dashboard',
       '/dashboard/bookings',
+      '/dashboard/presskits',
       '/dashboard/settings',
     ];
 

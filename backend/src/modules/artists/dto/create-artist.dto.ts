@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsEnum, IsNumber, IsBoolean, IsArray } from 'class-validator';
+import { IsString, IsOptional, IsEnum, IsNumber, IsBoolean, IsArray, IsEmail } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 class CreateArtistMediaDto {
@@ -129,6 +129,11 @@ export class CreateArtistDto {
   @IsOptional()
   @IsString()
   coverImageUrl?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsEmail()
+  accountEmail?: string;
 
   @ApiPropertyOptional({ type: [CreateArtistMediaDto] })
   @IsOptional()

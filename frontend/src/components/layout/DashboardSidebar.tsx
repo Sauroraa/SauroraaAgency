@@ -37,6 +37,7 @@ export function DashboardSidebar({ collapsed, onToggle }: { collapsed: boolean; 
   const promoterLinks = [
     { href: '/dashboard', icon: LayoutDashboard, label: t.dashboard.dashboard },
     { href: '/dashboard/bookings', icon: Calendar, label: t.dashboard.bookings },
+    { href: '/dashboard/presskits', icon: FileText, label: t.dashboard.presskits },
     { href: '/dashboard/settings', icon: Settings, label: t.dashboard.settings },
   ];
 
