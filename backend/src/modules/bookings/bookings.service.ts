@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { Booking } from './entities/booking.entity';
@@ -11,11 +11,11 @@ import { calculateBookingScore } from '@/common/utils/scoring.util';
 import { ArtistsService } from '@/modules/artists/artists.service';
 import { NotificationsService } from '@/modules/notifications/notifications.service';
 import * as ExcelJS from 'exceljs';
+import { User } from '@/modules/users/entities/user.entity';
 
 @Injectable()
 export class BookingsService {
   private bookingCounter = 0;
-  private static readonly ORGANIZER_CONTRACT_STATUSES = ['quoted', 'negotiating', 'confirmed'] as const;
 
   constructor(
     @InjectRepository(Booking)
@@ -24,6 +24,8 @@ export class BookingsService {
     private readonly commentRepo: Repository<BookingComment>,
     @InjectRepository(BookingStatusHistory)
     private readonly historyRepo: Repository<BookingStatusHistory>,
+    @InjectRepository(User)
+    private readonly userRepo: Repository<User>,
     private readonly artistsService: ArtistsService,
     private readonly notificationsService: NotificationsService,
     private readonly jwtService: JwtService,
@@ -82,7 +84,16 @@ export class BookingsService {
     return saved;
   }
 
-  async submitAuthenticated(dto: CreateBookingDto, ip: string): Promise<Booking> {
+  async submitAuthenticated(dto: CreateBookingDto, ip: string, user?: any): Promise<Booking> {
+    if (user?.role === 'organizer') {
+      const fullName = `${user.firstName || ''} ${user.lastName || ''}`.trim() || dto.requesterName;
+      const organizerDto: CreateBookingDto = {
+        ...dto,
+        requesterName: fullName,
+        requesterEmail: user.email,
+      };
+      return this.submitPublic(organizerDto, ip);
+    }
     return this.submitPublic(dto, ip);
   }
 
@@ -92,25 +103,11 @@ export class BookingsService {
     status?: string,
     artistId?: string,
     requesterEmail?: string,
-    assignedTo?: string,
-    organizerContractScope = false,
   ) {
     const where: any = {};
-    if (organizerContractScope) {
-      if (status) {
-        if (!BookingsService.ORGANIZER_CONTRACT_STATUSES.includes(status as any)) {
-          return { items: [], total: 0, page, limit, totalPages: 0 };
-        }
-        where.status = status;
-      } else {
-        where.status = In([...BookingsService.ORGANIZER_CONTRACT_STATUSES]);
-      }
-    } else if (status) {
-      where.status = status;
-    }
+    if (status) where.status = status;
     if (artistId) where.artistId = artistId;
     if (requesterEmail) where.requesterEmail = requesterEmail;
-    if (assignedTo) where.assignedTo = assignedTo;
 
     const [items, total] = await this.bookingRepo.findAndCount({
       where,
@@ -120,24 +117,6 @@ export class BookingsService {
       take: limit,
     });
     return { items, total, page, limit, totalPages: Math.ceil(total / limit) };
-  }
-
-  canOrganizerAccessBooking(booking: Booking, organizerUserId: string) {
-    return (
-      booking.assignedTo === organizerUserId
-      && BookingsService.ORGANIZER_CONTRACT_STATUSES.includes(booking.status as any)
-    );
-  }
-
-  async getOrganizerAccessibleArtistIds(organizerUserId: string): Promise<string[]> {
-    const rows = await this.bookingRepo
-      .createQueryBuilder('booking')
-      .select('DISTINCT booking.artistId', 'artistId')
-      .where('booking.assignedTo = :organizerUserId', { organizerUserId })
-      .andWhere('booking.status IN (:...statuses)', { statuses: [...BookingsService.ORGANIZER_CONTRACT_STATUSES] })
-      .getRawMany<{ artistId: string }>();
-
-    return rows.map((row) => row.artistId).filter(Boolean);
   }
 
   async findById(id: string): Promise<Booking> {
@@ -163,13 +142,21 @@ export class BookingsService {
       note: note || null,
     }));
 
-    await this.notificationsService.notifyBookingStatusUpdate(saved, status);
+    await this.notificationsService.notifyBookingStatusUpdate(saved, status, note);
 
     return saved;
   }
 
-  async addComment(bookingId: string, userId: string, content: string, isInternal = true): Promise<BookingComment> {
-    const comment = this.commentRepo.create({ bookingId, userId, content, isInternal });
+  async addComment(bookingId: string, user: any, content: string, isInternal = true): Promise<BookingComment> {
+    const booking = await this.findById(bookingId);
+    if (user?.role === 'artist' && booking.artistId !== user?.linkedArtistId) {
+      throw new ForbiddenException('You can only comment your own artist bookings');
+    }
+    if ((user?.role === 'promoter' || user?.role === 'organizer') && booking.requesterEmail?.toLowerCase() !== user?.email?.toLowerCase()) {
+      throw new ForbiddenException('You can only comment your own booking requests');
+    }
+
+    const comment = this.commentRepo.create({ bookingId, userId: user.id, content, isInternal });
     return this.commentRepo.save(comment);
   }
 
@@ -232,8 +219,54 @@ export class BookingsService {
     const signingUrl = `${appUrl}/contract/${token}`;
 
     await this.notificationsService.sendContractSignatureRequest(saved, signingUrl, dto.customMessage);
+    await this.notifyArtistContractConfirmation(saved);
 
     return { signingUrl, status: 'sent' };
+  }
+
+  private async notifyArtistContractConfirmation(booking: Booking) {
+    if (!booking.artistId) return;
+    const artistUser = await this.userRepo.findOne({
+      where: { role: 'artist', linkedArtistId: booking.artistId, isActive: true },
+    });
+    if (!artistUser) return;
+
+    const dashboardUrl = `${this.configService.get('APP_URL', 'https://agency.sauroraa.be')}/dashboard/bookings/${booking.id}`;
+    await this.notificationsService.sendArtistContractConfirmationRequest(artistUser.email, booking, dashboardUrl);
+  }
+
+  async reviewDecision(
+    id: string,
+    dto: {
+      action: 'accept' | 'changes_required';
+      quotedAmount?: number;
+      quotePdfUrl?: string;
+      customMessage?: string;
+      expiresInHours?: number;
+      note?: string;
+    },
+    userId: string,
+  ) {
+    const booking = await this.findById(id);
+
+    if (dto.action === 'changes_required') {
+      if (dto.quotedAmount !== undefined) booking.quotedAmount = dto.quotedAmount;
+      if (dto.quotePdfUrl !== undefined) booking.quotePdfUrl = dto.quotePdfUrl;
+      const saved = await this.bookingRepo.save(booking);
+      await this.updateStatus(saved.id, 'negotiating', userId, dto.note || dto.customMessage || 'Changes requested by admin');
+      return { status: 'changes_required' };
+    }
+
+    return this.sendContractForSignature(
+      id,
+      {
+        quotedAmount: dto.quotedAmount,
+        quotePdfUrl: dto.quotePdfUrl,
+        customMessage: dto.customMessage || dto.note,
+        expiresInHours: dto.expiresInHours,
+      },
+      userId,
+    );
   }
 
   async getContractByToken(token: string) {

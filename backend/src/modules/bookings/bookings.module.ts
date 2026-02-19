@@ -7,10 +7,11 @@ import { BookingStatusHistory } from './entities/booking-status-history.entity';
 import { BookingsService } from './bookings.service';
 import { BookingsController, PublicBookingsController } from './bookings.controller';
 import { ArtistsModule } from '@/modules/artists/artists.module';
+import { User } from '@/modules/users/entities/user.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Booking, BookingComment, BookingStatusHistory]),
+    TypeOrmModule.forFeature([Booking, BookingComment, BookingStatusHistory, User]),
     JwtModule.register({}),
     ArtistsModule,
   ],

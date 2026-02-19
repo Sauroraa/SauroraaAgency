@@ -52,7 +52,7 @@ export class ArtistsController {
   @Roles('admin', 'manager', 'organizer', 'artist')
   async findAll(@Query() filters: FilterArtistsDto, @CurrentUser() user: any) {
     if (user.role === 'organizer') {
-      return this.artistsService.findAllForOrganizer(filters, user.id);
+      return this.artistsService.findAllForOrganizer(filters, user.email);
     }
     if (user.role === 'artist') {
       if (!user.linkedArtistId) {
@@ -71,7 +71,7 @@ export class ArtistsController {
       throw new ForbiddenException('You can only access your artist profile');
     }
     if (user.role === 'organizer') {
-      const allowed = await this.artistsService.canOrganizerAccessArtist(user.id, id);
+      const allowed = await this.artistsService.canOrganizerAccessArtist(user.email, id);
       if (!allowed) {
         throw new ForbiddenException('You can only access artists linked to your active contracts');
       }

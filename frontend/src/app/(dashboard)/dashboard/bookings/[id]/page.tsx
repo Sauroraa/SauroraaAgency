@@ -25,6 +25,8 @@ export default function BookingDetailPage() {
   const [quotedAmount, setQuotedAmount] = useState('');
   const [quotePdfUrl, setQuotePdfUrl] = useState('');
   const [contractMessage, setContractMessage] = useState('');
+  const [reviewNote, setReviewNote] = useState('');
+  const canModerate = user?.role === 'admin' || user?.role === 'manager';
 
   const { data: booking, isLoading } = useQuery<Booking>({
     queryKey: ['booking', id],
@@ -83,6 +85,32 @@ export default function BookingDetailPage() {
     onError: (error: any) => {
       const message = error?.response?.data?.message;
       addToast('error', Array.isArray(message) ? message[0] : (message || 'Impossible d’envoyer le contrat'));
+    },
+  });
+
+  const reviewDecisionMutation = useMutation({
+    mutationFn: async (action: 'accept' | 'changes_required') => {
+      const res = await api.post(`/bookings/${id}/review-decision`, {
+        action,
+        quotedAmount: quotedAmount ? Number(quotedAmount) : undefined,
+        quotePdfUrl: quotePdfUrl || undefined,
+        customMessage: contractMessage || undefined,
+        note: reviewNote || undefined,
+      });
+      return res.data.data || res.data;
+    },
+    onSuccess: (data, action) => {
+      queryClient.invalidateQueries({ queryKey: ['booking', id] });
+      if (action === 'accept' && data?.signingUrl && typeof window !== 'undefined') {
+        navigator.clipboard?.writeText(data.signingUrl).catch(() => undefined);
+        addToast('success', 'Demande acceptée. Contrat envoyé à l’organizer et lien copié.');
+      } else {
+        addToast('success', 'Demande renvoyée avec changements.');
+      }
+    },
+    onError: (error: any) => {
+      const message = error?.response?.data?.message;
+      addToast('error', Array.isArray(message) ? message[0] : (message || 'Action impossible'));
     },
   });
 
@@ -190,10 +218,11 @@ export default function BookingDetailPage() {
 
         {/* Sidebar */}
         <div className="space-y-6">
-          <Card>
-            <h3 className="font-display font-semibold mb-4">Update Status</h3>
-            <div className="flex flex-wrap gap-2">
-              {BOOKING_STATUSES.map((s) => (
+          {canModerate && (
+            <Card>
+              <h3 className="font-display font-semibold mb-4">Update Status</h3>
+              <div className="flex flex-wrap gap-2">
+                {BOOKING_STATUSES.map((s) => (
                 <button
                   key={s.value}
                   onClick={() => statusMutation.mutate(s.value)}
@@ -206,9 +235,10 @@ export default function BookingDetailPage() {
                 >
                   {s.label}
                 </button>
-              ))}
-            </div>
-          </Card>
+                ))}
+              </div>
+            </Card>
+          )}
 
           <Card>
             <h3 className="font-display font-semibold mb-4">Requester</h3>
@@ -220,7 +250,8 @@ export default function BookingDetailPage() {
             </dl>
           </Card>
 
-          <Card>
+          {canModerate && (
+            <Card>
             <h3 className="font-display font-semibold mb-4 flex items-center gap-2">
               <FileSignature size={16} /> Contrat & Signature
             </h3>
@@ -245,11 +276,31 @@ export default function BookingDetailPage() {
                 placeholder="Message personnalisé (optionnel)"
                 className="w-full px-3 py-2 rounded-lg bg-dark-800 border border-dark-500 text-sm outline-none resize-none"
               />
+              <textarea
+                rows={2}
+                value={reviewNote}
+                onChange={(e) => setReviewNote(e.target.value)}
+                placeholder="Note admin (retour changements ou instructions)"
+                className="w-full px-3 py-2 rounded-lg bg-dark-800 border border-dark-500 text-sm outline-none resize-none"
+              />
+              <Button
+                onClick={() => reviewDecisionMutation.mutate('accept')}
+                isLoading={reviewDecisionMutation.isPending}
+              >
+                Accepter et envoyer le contrat
+              </Button>
               <Button
                 onClick={() => sendContractMutation.mutate()}
                 isLoading={sendContractMutation.isPending}
               >
                 Envoyer le contrat à signer
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={() => reviewDecisionMutation.mutate('changes_required')}
+                isLoading={reviewDecisionMutation.isPending}
+              >
+                Renvoyer avec changements
               </Button>
               {booking.signedAt && (
                 <p className="text-xs text-emerald-400">Signé le {new Date(booking.signedAt).toLocaleString()}</p>
@@ -268,7 +319,8 @@ export default function BookingDetailPage() {
                 </Button>
               )}
             </div>
-          </Card>
+            </Card>
+          )}
 
           {statusHistory.length > 0 && (
             <Card>

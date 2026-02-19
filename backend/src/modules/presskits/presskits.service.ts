@@ -82,11 +82,11 @@ export class PresskitsService {
     return { items, total, page, limit, totalPages: Math.ceil(total / limit) };
   }
 
-  async getOrganizerAccessibleArtistIds(organizerUserId: string): Promise<string[]> {
+  async getOrganizerAccessibleArtistIds(organizerEmail: string): Promise<string[]> {
     const rows = await this.bookingRepo
       .createQueryBuilder('booking')
       .select('DISTINCT booking.artistId', 'artistId')
-      .where('booking.assignedTo = :organizerUserId', { organizerUserId })
+      .where('LOWER(booking.requesterEmail) = LOWER(:organizerEmail)', { organizerEmail })
       .andWhere('booking.status IN (:...statuses)', { statuses: ['quoted', 'negotiating', 'confirmed'] })
       .getRawMany<{ artistId: string }>();
 

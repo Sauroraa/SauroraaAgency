@@ -56,7 +56,7 @@ export class PresskitsController {
   @Roles('admin', 'manager', 'organizer', 'artist')
   async findAll(@Query() pagination: PaginationDto, @Query('artistId') artistId?: string, @CurrentUser() user?: any) {
     if (user?.role === 'organizer') {
-      const accessibleArtistIds = await this.presskitsService.getOrganizerAccessibleArtistIds(user.id);
+      const accessibleArtistIds = await this.presskitsService.getOrganizerAccessibleArtistIds(user.email);
       return this.presskitsService.findAll(pagination.page, pagination.limit, undefined, accessibleArtistIds);
     }
     const scopedArtistId = user?.role === 'artist' ? user?.linkedArtistId : artistId;
@@ -75,7 +75,7 @@ export class PresskitsController {
       }
     }
     if (user?.role === 'organizer') {
-      const accessibleArtistIds = await this.presskitsService.getOrganizerAccessibleArtistIds(user.id);
+      const accessibleArtistIds = await this.presskitsService.getOrganizerAccessibleArtistIds(user.email);
       if (!accessibleArtistIds.includes(presskit.artistId)) {
         throw new ForbiddenException('You can only access presskits linked to your active contracts');
       }
@@ -118,7 +118,7 @@ export class PresskitsController {
   async getAnalytics(@Param('id') id: string, @CurrentUser() user?: any) {
     if (user?.role === 'organizer') {
       const presskit = await this.presskitsService.findById(id);
-      const accessibleArtistIds = await this.presskitsService.getOrganizerAccessibleArtistIds(user.id);
+      const accessibleArtistIds = await this.presskitsService.getOrganizerAccessibleArtistIds(user.email);
       if (!accessibleArtistIds.includes(presskit.artistId)) {
         throw new ForbiddenException('You can only access analytics linked to your active contracts');
       }

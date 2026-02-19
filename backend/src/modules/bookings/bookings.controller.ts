@@ -39,27 +39,23 @@ export class BookingsController {
   constructor(private readonly bookingsService: BookingsService) {}
 
   @Post()
-  @Roles('admin', 'manager', 'promoter')
-  create(@Body() dto: CreateBookingDto, @Req() req: Request) {
+  @Roles('admin', 'manager', 'promoter', 'organizer')
+  create(@Body() dto: CreateBookingDto, @Req() req: Request, @CurrentUser() user?: any) {
     const ip = req.ip || req.socket.remoteAddress || '0.0.0.0';
-    return this.bookingsService.submitAuthenticated(dto, ip);
+    return this.bookingsService.submitAuthenticated(dto, ip, user);
   }
 
   @Get()
   @Roles('admin', 'manager', 'organizer', 'promoter', 'artist')
   findAll(@Query() pagination: PaginationDto, @Query('status') status?: string, @CurrentUser() user?: any) {
     const artistId = user?.role === 'artist' ? user?.linkedArtistId : undefined;
-    const requesterEmail = user?.role === 'promoter' ? user?.email : undefined;
-    const assignedTo = user?.role === 'organizer' ? user?.id : undefined;
-    const organizerScope = user?.role === 'organizer';
+    const requesterEmail = user?.role === 'promoter' || user?.role === 'organizer' ? user?.email : undefined;
     return this.bookingsService.findAll(
       pagination.page,
       pagination.limit,
       status,
       artistId,
       requesterEmail,
-      assignedTo,
-      organizerScope,
     );
   }
 
@@ -84,8 +80,8 @@ export class BookingsController {
     if (user?.role === 'promoter' && booking.requesterEmail?.toLowerCase() !== user?.email?.toLowerCase()) {
       throw new ForbiddenException('You can only access your own requests');
     }
-    if (user?.role === 'organizer' && !this.bookingsService.canOrganizerAccessBooking(booking, user?.id)) {
-      throw new ForbiddenException('You can only access assigned bookings with contracts in progress');
+    if (user?.role === 'organizer' && booking.requesterEmail?.toLowerCase() !== user?.email?.toLowerCase()) {
+      throw new ForbiddenException('You can only access your own organizer requests');
     }
     return booking;
   }
@@ -101,13 +97,13 @@ export class BookingsController {
   }
 
   @Post(':id/comments')
-  @Roles('admin', 'manager', 'artist')
+  @Roles('admin', 'manager', 'organizer', 'promoter', 'artist')
   addComment(
     @Param('id') id: string,
     @Body() body: { content: string; isInternal?: boolean },
-    @CurrentUser('id') userId: string,
+    @CurrentUser() user: any,
   ) {
-    return this.bookingsService.addComment(id, userId, body.content, body.isInternal);
+    return this.bookingsService.addComment(id, user, body.content, body.isInternal);
   }
 
   @Patch(':id/assign')
@@ -130,5 +126,23 @@ export class BookingsController {
     @CurrentUser('id') userId: string,
   ) {
     return this.bookingsService.sendContractForSignature(id, body, userId);
+  }
+
+  @Post(':id/review-decision')
+  @Roles('admin', 'manager')
+  reviewDecision(
+    @Param('id') id: string,
+    @Body()
+    body: {
+      action: 'accept' | 'changes_required';
+      quotedAmount?: number;
+      quotePdfUrl?: string;
+      customMessage?: string;
+      expiresInHours?: number;
+      note?: string;
+    },
+    @CurrentUser('id') userId: string,
+  ) {
+    return this.bookingsService.reviewDecision(id, body, userId);
   }
 }

@@ -141,17 +141,15 @@ export default function BookingsPage() {
         <p className="text-sm text-[var(--text-muted)] mt-1">Manage booking requests and pipeline</p>
       </div>
 
-      {!isOrganizer && (
-        <div className="flex justify-end">
-          <Button onClick={() => setShowCreate((v) => !v)}>
-            <Plus size={14} /> {showCreate ? 'Fermer' : 'Nouveau booking'}
-          </Button>
-        </div>
-      )}
+      <div className="flex justify-end">
+        <Button onClick={() => setShowCreate((v) => !v)}>
+          <Plus size={14} /> {showCreate ? 'Fermer' : (isOrganizer ? 'Nouvelle demande' : 'Nouveau booking')}
+        </Button>
+      </div>
 
-      {!isOrganizer && showCreate && (
+      {showCreate && (
         <Card>
-          <h3 className="font-display font-semibold mb-4">Créer un booking</h3>
+          <h3 className="font-display font-semibold mb-4">{isOrganizer ? 'Créer une demande de booking' : 'Créer un booking'}</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1.5 md:col-span-2">
               <label className="block text-sm font-medium text-[var(--text-secondary)]">Artiste *</label>

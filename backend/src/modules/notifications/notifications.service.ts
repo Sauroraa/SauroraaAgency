@@ -37,6 +37,7 @@ export class NotificationsService {
       'quote',
       'contract-signature-request',
       'contract-signed',
+      'artist-contract-confirmation',
     ];
 
     for (const name of templateFiles) {
@@ -77,12 +78,12 @@ export class NotificationsService {
     );
   }
 
-  async notifyBookingStatusUpdate(booking: any, newStatus: string): Promise<void> {
+  async notifyBookingStatusUpdate(booking: any, newStatus: string, note?: string): Promise<void> {
     await this.sendEmail(
       booking.requesterEmail,
       `Booking Update - ${booking.referenceCode}`,
       'booking-status-update',
-      { booking, newStatus },
+      { booking, newStatus, note },
     );
   }
 
@@ -180,6 +181,15 @@ export class NotificationsService {
       `Contract signed - ${booking.referenceCode}`,
       'contract-signed',
       { booking },
+    );
+  }
+
+  async sendArtistContractConfirmationRequest(artistEmail: string, booking: any, dashboardUrl: string): Promise<void> {
+    await this.sendEmail(
+      artistEmail,
+      `Booking confirmation required - ${booking.referenceCode}`,
+      'artist-contract-confirmation',
+      { booking, dashboardUrl },
     );
   }
 }

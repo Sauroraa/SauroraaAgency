@@ -105,24 +105,24 @@ export class ArtistsService {
     return { items, total, page: filters.page, limit: filters.limit, totalPages: Math.ceil(total / (filters.limit || 20)) };
   }
 
-  async getOrganizerAccessibleArtistIds(organizerUserId: string): Promise<string[]> {
+  async getOrganizerAccessibleArtistIds(organizerEmail: string): Promise<string[]> {
     const rows = await this.bookingRepo
       .createQueryBuilder('booking')
       .select('DISTINCT booking.artistId', 'artistId')
-      .where('booking.assignedTo = :organizerUserId', { organizerUserId })
+      .where('LOWER(booking.requesterEmail) = LOWER(:organizerEmail)', { organizerEmail })
       .andWhere('booking.status IN (:...statuses)', { statuses: ['quoted', 'negotiating', 'confirmed'] })
       .getRawMany<{ artistId: string }>();
 
     return rows.map((row) => row.artistId).filter(Boolean);
   }
 
-  async canOrganizerAccessArtist(organizerUserId: string, artistId: string): Promise<boolean> {
-    const artistIds = await this.getOrganizerAccessibleArtistIds(organizerUserId);
+  async canOrganizerAccessArtist(organizerEmail: string, artistId: string): Promise<boolean> {
+    const artistIds = await this.getOrganizerAccessibleArtistIds(organizerEmail);
     return artistIds.includes(artistId);
   }
 
-  async findAllForOrganizer(filters: FilterArtistsDto, organizerUserId: string) {
-    const artistIds = await this.getOrganizerAccessibleArtistIds(organizerUserId);
+  async findAllForOrganizer(filters: FilterArtistsDto, organizerEmail: string) {
+    const artistIds = await this.getOrganizerAccessibleArtistIds(organizerEmail);
     if (!artistIds.length) {
       return { items: [], total: 0, page: filters.page, limit: filters.limit, totalPages: 0 };
     }
