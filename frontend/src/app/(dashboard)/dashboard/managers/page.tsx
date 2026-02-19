@@ -29,7 +29,7 @@ export default function ManagersPage() {
       api.patch(`/users/${userId}/status`, { isActive }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
-      addToast('success', 'Statut du manager mis à jour');
+      addToast('success', 'Statut utilisateur mis à jour');
     },
     onError: (error: any) => {
       const message = error?.response?.data?.message;
@@ -41,7 +41,7 @@ export default function ManagersPage() {
     mutationFn: async (userId: string) => api.delete(`/users/${userId}/permanent`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
-      addToast('success', 'Manager supprimé définitivement');
+      addToast('success', 'Utilisateur supprimé définitivement');
     },
     onError: (error: any) => {
       const message = error?.response?.data?.message;
@@ -55,7 +55,7 @@ export default function ManagersPage() {
     <div className="space-y-6">
       <div>
         <h1 className="font-display text-2xl font-bold">Managers</h1>
-        <p className="text-sm text-[var(--text-muted)] mt-1">Manage team members and roles</p>
+        <p className="text-sm text-[var(--text-muted)] mt-1">Manage all users and roles</p>
       </div>
 
       <Card className="p-0 overflow-hidden">
@@ -78,8 +78,7 @@ export default function ManagersPage() {
             <tbody>
               {users.map((user: any) => {
                 const isSelf = currentUser?.id === user.id;
-                const isManager = user.role === 'manager';
-                const canManage = isAdmin && !isSelf && isManager;
+                const canManage = isAdmin && !isSelf;
 
                 return (
                   <tr key={user.id} className="border-b border-[var(--border-color)] hover:bg-dark-800/30">
@@ -93,14 +92,16 @@ export default function ManagersPage() {
                     </td>
                     <td className="py-3 px-6 text-[var(--text-secondary)]">{user.email}</td>
                     <td className="py-3 px-6">
-                      <Badge variant={user.role === 'admin' ? 'info' : user.role === 'promoter' ? 'warning' : user.role === 'organizer' ? 'info' : 'default'}>
+                      <Badge variant={user.role === 'admin' ? 'info' : user.role === 'promoter' ? 'warning' : user.role === 'organizer' ? 'info' : user.role === 'artist' ? 'warning' : 'default'}>
                         {user.role === 'admin'
                           ? <><Shield size={10} className="mr-1" /> Admin</>
                           : user.role === 'promoter'
                             ? 'Promoter'
                             : user.role === 'organizer'
                               ? 'Organizer'
-                              : 'Manager'}
+                              : user.role === 'artist'
+                                ? 'Artist'
+                                : 'Manager'}
                       </Badge>
                     </td>
                     <td className="py-3 px-6">
@@ -129,7 +130,7 @@ export default function ManagersPage() {
                             size="sm"
                             disabled={!canManage || deleteManager.isPending}
                             onClick={() => {
-                              if (window.confirm('Supprimer définitivement ce compte manager ?')) {
+                              if (window.confirm('Supprimer définitivement ce compte utilisateur ?')) {
                                 deleteManager.mutate(user.id);
                               }
                             }}

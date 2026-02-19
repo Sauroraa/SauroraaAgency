@@ -72,9 +72,6 @@ export class UsersService {
     if (actorId && actorId === user.id) {
       throw new BadRequestException('You cannot modify your own account status');
     }
-    if (user.role !== 'manager') {
-      throw new BadRequestException('Only manager accounts can be enabled/disabled here');
-    }
     user.isActive = isActive;
     return this.userRepo.save(user);
   }
@@ -83,9 +80,6 @@ export class UsersService {
     const user = await this.findById(id);
     if (actorId && actorId === user.id) {
       throw new BadRequestException('You cannot delete your own account');
-    }
-    if (user.role !== 'manager') {
-      throw new BadRequestException('Only manager accounts can be deleted here');
     }
     await this.userRepo.remove(user);
   }
