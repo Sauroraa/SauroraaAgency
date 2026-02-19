@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
@@ -53,9 +53,30 @@ export class UsersService {
   }
 
   async deactivate(id: string): Promise<User> {
+    return this.setManagerActiveStatus(id, false);
+  }
+
+  async setManagerActiveStatus(id: string, isActive: boolean, actorId?: string): Promise<User> {
     const user = await this.findById(id);
-    user.isActive = false;
+    if (actorId && actorId === user.id) {
+      throw new BadRequestException('You cannot modify your own account status');
+    }
+    if (user.role !== 'manager') {
+      throw new BadRequestException('Only manager accounts can be enabled/disabled here');
+    }
+    user.isActive = isActive;
     return this.userRepo.save(user);
+  }
+
+  async deleteManager(id: string, actorId?: string): Promise<void> {
+    const user = await this.findById(id);
+    if (actorId && actorId === user.id) {
+      throw new BadRequestException('You cannot delete your own account');
+    }
+    if (user.role !== 'manager') {
+      throw new BadRequestException('Only manager accounts can be deleted here');
+    }
+    await this.userRepo.remove(user);
   }
 
   async updateRefreshToken(id: string, hash: string | null): Promise<void> {

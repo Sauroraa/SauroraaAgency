@@ -1,7 +1,7 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Users, Shield, Trash2 } from 'lucide-react';
+import { Shield, Trash2, UserX, UserCheck } from 'lucide-react';
 import { api } from '@/lib/api';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
@@ -24,13 +24,29 @@ export default function ManagersPage() {
     },
   });
 
-  const deactivateUser = useMutation({
-    mutationFn: async (userId: string) => api.delete(`/users/${userId}`),
+  const updateStatus = useMutation({
+    mutationFn: async ({ userId, isActive }: { userId: string; isActive: boolean }) =>
+      api.patch(`/users/${userId}/status`, { isActive }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
-      addToast('success', 'Compte désactivé avec succès');
+      addToast('success', 'Statut du manager mis à jour');
     },
-    onError: () => addToast('error', 'Impossible de désactiver ce compte'),
+    onError: (error: any) => {
+      const message = error?.response?.data?.message;
+      addToast('error', Array.isArray(message) ? message[0] : (message || 'Impossible de modifier ce compte'));
+    },
+  });
+
+  const deleteManager = useMutation({
+    mutationFn: async (userId: string) => api.delete(`/users/${userId}/permanent`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      addToast('success', 'Manager supprimé définitivement');
+    },
+    onError: (error: any) => {
+      const message = error?.response?.data?.message;
+      addToast('error', Array.isArray(message) ? message[0] : (message || 'Impossible de supprimer ce compte'));
+    },
   });
 
   const users = data?.items || [];
@@ -62,7 +78,8 @@ export default function ManagersPage() {
             <tbody>
               {users.map((user: any) => {
                 const isSelf = currentUser?.id === user.id;
-                const canDeactivate = isAdmin && !isSelf && user.isActive;
+                const isManager = user.role === 'manager';
+                const canManage = isAdmin && !isSelf && isManager;
 
                 return (
                   <tr key={user.id} className="border-b border-[var(--border-color)] hover:bg-dark-800/30">
@@ -90,15 +107,31 @@ export default function ManagersPage() {
                     </td>
                     {isAdmin && (
                       <td className="py-3 px-6">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          disabled={!canDeactivate || deactivateUser.isPending}
-                          onClick={() => deactivateUser.mutate(user.id)}
-                          className="text-red-400 hover:bg-red-500/10 disabled:opacity-50"
-                        >
-                          <Trash2 size={14} /> Supprimer
-                        </Button>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            disabled={!canManage || updateStatus.isPending}
+                            onClick={() => updateStatus.mutate({ userId: user.id, isActive: !user.isActive })}
+                            className="disabled:opacity-50"
+                          >
+                            {user.isActive ? <UserX size={14} /> : <UserCheck size={14} />}
+                            {user.isActive ? 'Désactiver' : 'Réactiver'}
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            disabled={!canManage || deleteManager.isPending}
+                            onClick={() => {
+                              if (window.confirm('Supprimer définitivement ce compte manager ?')) {
+                                deleteManager.mutate(user.id);
+                              }
+                            }}
+                            className="text-red-400 hover:bg-red-500/10 disabled:opacity-50"
+                          >
+                            <Trash2 size={14} /> Supprimer
+                          </Button>
+                        </div>
                       </td>
                     )}
                   </tr>
