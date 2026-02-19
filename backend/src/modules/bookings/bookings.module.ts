@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { JwtModule } from '@nestjs/jwt';
 import { Booking } from './entities/booking.entity';
 import { BookingComment } from './entities/booking-comment.entity';
 import { BookingStatusHistory } from './entities/booking-status-history.entity';
@@ -10,6 +11,7 @@ import { ArtistsModule } from '@/modules/artists/artists.module';
 @Module({
   imports: [
     TypeOrmModule.forFeature([Booking, BookingComment, BookingStatusHistory]),
+    JwtModule.register({}),
     ArtistsModule,
   ],
   controllers: [BookingsController, PublicBookingsController],

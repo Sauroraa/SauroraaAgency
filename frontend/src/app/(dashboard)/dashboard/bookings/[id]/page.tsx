@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams } from 'next/navigation';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { MessageSquare, Send, Clock, MapPin, Users as UsersIcon, DollarSign } from 'lucide-react';
+import { MessageSquare, Send, Clock, MapPin, Users as UsersIcon, DollarSign, FileSignature } from 'lucide-react';
 import { api } from '@/lib/api';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
@@ -19,6 +19,9 @@ export default function BookingDetailPage() {
   const queryClient = useQueryClient();
   const addToast = useToastStore((s) => s.addToast);
   const [comment, setComment] = useState('');
+  const [quotedAmount, setQuotedAmount] = useState('');
+  const [quotePdfUrl, setQuotePdfUrl] = useState('');
+  const [contractMessage, setContractMessage] = useState('');
 
   const { data: booking, isLoading } = useQuery<Booking>({
     queryKey: ['booking', id],
@@ -55,6 +58,28 @@ export default function BookingDetailPage() {
       queryClient.invalidateQueries({ queryKey: ['booking', id] });
       setComment('');
       addToast('success', 'Comment added');
+    },
+  });
+
+  const sendContractMutation = useMutation({
+    mutationFn: async () => {
+      const res = await api.post(`/bookings/${id}/send-contract`, {
+        quotedAmount: quotedAmount ? Number(quotedAmount) : undefined,
+        quotePdfUrl: quotePdfUrl || undefined,
+        customMessage: contractMessage || undefined,
+      });
+      return res.data.data || res.data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['booking', id] });
+      if (data?.signingUrl && typeof window !== 'undefined') {
+        navigator.clipboard?.writeText(data.signingUrl).catch(() => undefined);
+      }
+      addToast('success', 'Contrat envoyé. Lien de signature copié.');
+    },
+    onError: (error: any) => {
+      const message = error?.response?.data?.message;
+      addToast('error', Array.isArray(message) ? message[0] : (message || 'Impossible d’envoyer le contrat'));
     },
   });
 
@@ -175,6 +200,43 @@ export default function BookingDetailPage() {
               {booking.requesterPhone && <div><dt className="text-[var(--text-muted)]">Phone</dt><dd>{booking.requesterPhone}</dd></div>}
               {booking.requesterCompany && <div><dt className="text-[var(--text-muted)]">Company</dt><dd>{booking.requesterCompany}</dd></div>}
             </dl>
+          </Card>
+
+          <Card>
+            <h3 className="font-display font-semibold mb-4 flex items-center gap-2">
+              <FileSignature size={16} /> Contrat & Signature
+            </h3>
+            <div className="space-y-3">
+              <input
+                type="number"
+                value={quotedAmount}
+                onChange={(e) => setQuotedAmount(e.target.value)}
+                placeholder="Montant du devis (EUR)"
+                className="w-full px-3 py-2 rounded-lg bg-dark-800 border border-dark-500 text-sm outline-none"
+              />
+              <input
+                value={quotePdfUrl}
+                onChange={(e) => setQuotePdfUrl(e.target.value)}
+                placeholder="URL PDF contrat/devis (optionnel)"
+                className="w-full px-3 py-2 rounded-lg bg-dark-800 border border-dark-500 text-sm outline-none"
+              />
+              <textarea
+                rows={3}
+                value={contractMessage}
+                onChange={(e) => setContractMessage(e.target.value)}
+                placeholder="Message personnalisé (optionnel)"
+                className="w-full px-3 py-2 rounded-lg bg-dark-800 border border-dark-500 text-sm outline-none resize-none"
+              />
+              <Button
+                onClick={() => sendContractMutation.mutate()}
+                isLoading={sendContractMutation.isPending}
+              >
+                Envoyer le contrat à signer
+              </Button>
+              {booking.signedAt && (
+                <p className="text-xs text-emerald-400">Signé le {new Date(booking.signedAt).toLocaleString()}</p>
+              )}
+            </div>
           </Card>
 
           {statusHistory.length > 0 && (

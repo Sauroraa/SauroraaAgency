@@ -1,0 +1,20 @@
+<html>
+  <body style="font-family: Arial, sans-serif; color: #111827;">
+    <h2>Signature requise</h2>
+    <p>Bonjour {{booking.requesterName}},</p>
+    <p>Votre contrat est prêt pour la demande <strong>{{booking.referenceCode}}</strong>.</p>
+    <p>Artiste: <strong>{{booking.artist.name}}</strong></p>
+    <p>Evénement: <strong>{{booking.eventName}}</strong></p>
+    {{#if booking.quotedAmount}}
+    <p>Montant: <strong>{{booking.quotedAmount}} {{booking.budgetCurrency}}</strong></p>
+    {{/if}}
+    {{#if customMessage}}
+    <p>{{customMessage}}</p>
+    {{/if}}
+    <p>
+      <a href="{{signingUrl}}" style="display:inline-block;padding:10px 16px;background:#0891b2;color:#fff;text-decoration:none;border-radius:6px;">
+        Signer le contrat
+      </a>
+    </p>
+  </body>
+</html>

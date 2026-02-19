@@ -1,6 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 import { Booking } from './entities/booking.entity';
 import { BookingComment } from './entities/booking-comment.entity';
 import { BookingStatusHistory } from './entities/booking-status-history.entity';
@@ -23,6 +25,8 @@ export class BookingsService {
     private readonly historyRepo: Repository<BookingStatusHistory>,
     private readonly artistsService: ArtistsService,
     private readonly notificationsService: NotificationsService,
+    private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
   ) {}
 
   private async generateReferenceCode(): Promise<string> {
@@ -77,6 +81,10 @@ export class BookingsService {
     return saved;
   }
 
+  async submitAuthenticated(dto: CreateBookingDto, ip: string): Promise<Booking> {
+    return this.submitPublic(dto, ip);
+  }
+
   async findAll(page = 1, limit = 20, status?: string) {
     const where: any = {};
     if (status) where.status = status;
@@ -128,6 +136,116 @@ export class BookingsService {
     const booking = await this.findById(id);
     booking.assignedTo = userId;
     return this.bookingRepo.save(booking);
+  }
+
+  private signContractToken(bookingId: string, requesterEmail: string, expiresInHours?: number) {
+    const payload = { type: 'booking_contract', bookingId, requesterEmail };
+    return this.jwtService.sign(payload, {
+      secret: this.configService.get('JWT_BOOKING_SIGN_SECRET', this.configService.get('JWT_ACCESS_SECRET')),
+      expiresIn: expiresInHours ? `${expiresInHours}h` : '7d',
+    });
+  }
+
+  private verifyContractToken(token: string): { bookingId: string; requesterEmail: string; type: string } {
+    try {
+      return this.jwtService.verify(token, {
+        secret: this.configService.get('JWT_BOOKING_SIGN_SECRET', this.configService.get('JWT_ACCESS_SECRET')),
+      });
+    } catch {
+      throw new ForbiddenException('Invalid or expired contract link');
+    }
+  }
+
+  async sendContractForSignature(
+    id: string,
+    dto: { quotedAmount?: number; quotePdfUrl?: string; customMessage?: string; expiresInHours?: number },
+    userId: string,
+  ) {
+    const booking = await this.findById(id);
+    const previousStatus = booking.status;
+
+    if (dto.quotedAmount !== undefined) booking.quotedAmount = dto.quotedAmount;
+    if (dto.quotePdfUrl !== undefined) booking.quotePdfUrl = dto.quotePdfUrl;
+    booking.quoteSentAt = new Date();
+    booking.status = 'quoted';
+
+    const saved = await this.bookingRepo.save(booking);
+
+    if (previousStatus !== saved.status) {
+      await this.historyRepo.save(this.historyRepo.create({
+        bookingId: saved.id,
+        fromStatus: previousStatus,
+        toStatus: saved.status,
+        changedBy: userId,
+        note: 'Contract sent for signature',
+      }));
+    }
+
+    const token = this.signContractToken(saved.id, saved.requesterEmail, dto.expiresInHours);
+    const appUrl = this.configService.get('APP_URL', 'https://agency.sauroraa.be');
+    const signingUrl = `${appUrl}/contract/${token}`;
+
+    await this.notificationsService.sendContractSignatureRequest(saved, signingUrl, dto.customMessage);
+
+    return { signingUrl, status: 'sent' };
+  }
+
+  async getContractByToken(token: string) {
+    const payload = this.verifyContractToken(token);
+    if (payload.type !== 'booking_contract') throw new ForbiddenException('Invalid contract token');
+
+    const booking = await this.findById(payload.bookingId);
+    if (booking.requesterEmail.toLowerCase() !== payload.requesterEmail.toLowerCase()) {
+      throw new ForbiddenException('Contract recipient mismatch');
+    }
+
+    return {
+      id: booking.id,
+      referenceCode: booking.referenceCode,
+      artistName: booking.artist?.name,
+      eventName: booking.eventName,
+      eventDate: booking.eventDate,
+      eventCity: booking.eventCity,
+      eventCountry: booking.eventCountry,
+      quotedAmount: booking.quotedAmount,
+      budgetCurrency: booking.budgetCurrency,
+      quotePdfUrl: booking.quotePdfUrl,
+      requesterName: booking.requesterName,
+      requesterEmail: booking.requesterEmail,
+      signedAt: booking.signedAt,
+      alreadySigned: Boolean(booking.signedAt),
+    };
+  }
+
+  async signContractByToken(token: string, signature: string) {
+    const payload = this.verifyContractToken(token);
+    if (payload.type !== 'booking_contract') throw new ForbiddenException('Invalid contract token');
+    if (!signature?.trim()) throw new BadRequestException('Signature is required');
+
+    const booking = await this.findById(payload.bookingId);
+    if (booking.requesterEmail.toLowerCase() !== payload.requesterEmail.toLowerCase()) {
+      throw new ForbiddenException('Contract recipient mismatch');
+    }
+    if (booking.signedAt) {
+      throw new BadRequestException('Contract already signed');
+    }
+
+    const previousStatus = booking.status;
+    booking.digitalSignature = signature.trim();
+    booking.signedAt = new Date();
+    booking.status = 'confirmed';
+    const saved = await this.bookingRepo.save(booking);
+
+    await this.historyRepo.save(this.historyRepo.create({
+      bookingId: saved.id,
+      fromStatus: previousStatus,
+      toStatus: 'confirmed',
+      note: 'Contract signed online',
+    }));
+
+    await this.notificationsService.sendContractSignedConfirmation(saved);
+
+    return { success: true, referenceCode: saved.referenceCode };
   }
 
   async exportToExcel(status?: string): Promise<Buffer> {

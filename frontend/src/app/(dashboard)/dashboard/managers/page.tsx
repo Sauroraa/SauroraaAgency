@@ -93,8 +93,14 @@ export default function ManagersPage() {
                     </td>
                     <td className="py-3 px-6 text-[var(--text-secondary)]">{user.email}</td>
                     <td className="py-3 px-6">
-                      <Badge variant={user.role === 'admin' ? 'info' : user.role === 'promoter' ? 'warning' : 'default'}>
-                        {user.role === 'admin' ? <><Shield size={10} className="mr-1" /> Admin</> : user.role === 'promoter' ? 'Promoter' : 'Manager'}
+                      <Badge variant={user.role === 'admin' ? 'info' : user.role === 'promoter' ? 'warning' : user.role === 'organizer' ? 'info' : 'default'}>
+                        {user.role === 'admin'
+                          ? <><Shield size={10} className="mr-1" /> Admin</>
+                          : user.role === 'promoter'
+                            ? 'Promoter'
+                            : user.role === 'organizer'
+                              ? 'Organizer'
+                              : 'Manager'}
                       </Badge>
                     </td>
                     <td className="py-3 px-6">

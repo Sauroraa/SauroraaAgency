@@ -16,7 +16,7 @@ export default function InvitationsPage() {
   const addToast = useToastStore((s) => s.addToast);
   const [showModal, setShowModal] = useState(false);
   const [email, setEmail] = useState('');
-  const [role, setRole] = useState<'manager' | 'admin' | 'promoter'>('manager');
+  const [role, setRole] = useState<'manager' | 'admin' | 'promoter' | 'organizer'>('manager');
 
   const { data: invitations } = useQuery({
     queryKey: ['invitations'],
@@ -77,7 +77,7 @@ export default function InvitationsPage() {
             {(invitations || []).map((inv: any) => (
               <tr key={inv.id} className="border-b border-[var(--border-color)]">
                 <td className="py-3 px-6 flex items-center gap-2"><Mail size={14} className="text-[var(--text-muted)]" /> {inv.email}</td>
-                <td className="py-3 px-6"><Badge variant={inv.role === 'admin' ? 'info' : inv.role === 'promoter' ? 'warning' : 'default'}>{inv.role}</Badge></td>
+                <td className="py-3 px-6"><Badge variant={inv.role === 'admin' ? 'info' : inv.role === 'promoter' ? 'warning' : inv.role === 'organizer' ? 'info' : 'default'}>{inv.role}</Badge></td>
                 <td className="py-3 px-6">
                   <Badge variant={inv.acceptedAt ? 'success' : new Date(inv.expiresAt) < new Date() ? 'danger' : 'warning'}>
                     {inv.acceptedAt ? 'Accepted' : new Date(inv.expiresAt) < new Date() ? 'Expired' : 'Pending'}
@@ -105,6 +105,7 @@ export default function InvitationsPage() {
             <select value={role} onChange={(e) => setRole(e.target.value as any)} className="w-full px-4 py-2.5 rounded-lg bg-dark-800 border border-dark-500 text-sm outline-none">
               <option value="manager">Manager</option>
               <option value="promoter">Promoter</option>
+              <option value="organizer">Organizer</option>
               <option value="admin">Admin</option>
             </select>
           </div>

@@ -49,13 +49,13 @@ export class ArtistsController {
   constructor(private readonly artistsService: ArtistsService) {}
 
   @Get()
-  @Roles('admin', 'manager')
+  @Roles('admin', 'manager', 'organizer')
   findAll(@Query() filters: FilterArtistsDto) {
     return this.artistsService.findAll(filters);
   }
 
   @Get(':id')
-  @Roles('admin', 'manager')
+  @Roles('admin', 'manager', 'organizer')
   findOne(@Param('id') id: string) {
     return this.artistsService.findById(id);
   }
@@ -86,7 +86,7 @@ export class ArtistsController {
   }
 
   @Get(':id/similar')
-  @Roles('admin', 'manager')
+  @Roles('admin', 'manager', 'organizer')
   findSimilar(@Param('id') id: string) {
     return this.artistsService.findSimilar(id);
   }

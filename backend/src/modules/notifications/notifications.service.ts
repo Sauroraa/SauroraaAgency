@@ -34,6 +34,8 @@ export class NotificationsService {
       'invitation',
       'password-reset',
       'quote',
+      'contract-signature-request',
+      'contract-signed',
     ];
 
     for (const name of templateFiles) {
@@ -118,6 +120,24 @@ export class NotificationsService {
       'Password Reset - Sauroraa Agency',
       'password-reset',
       { resetUrl },
+    );
+  }
+
+  async sendContractSignatureRequest(booking: any, signingUrl: string, customMessage?: string): Promise<void> {
+    await this.sendEmail(
+      booking.requesterEmail,
+      `Signature required - ${booking.referenceCode}`,
+      'contract-signature-request',
+      { booking, signingUrl, customMessage },
+    );
+  }
+
+  async sendContractSignedConfirmation(booking: any): Promise<void> {
+    await this.sendEmail(
+      booking.requesterEmail,
+      `Contract signed - ${booking.referenceCode}`,
+      'contract-signed',
+      { booking },
     );
   }
 }

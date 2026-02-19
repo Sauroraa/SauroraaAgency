@@ -32,7 +32,7 @@ function MetricCard({ title, value, icon: Icon, change, trend }: {
 
 export default function DashboardPage() {
   const user = useAuthStore((s) => s.user);
-  const isPromoter = user?.role === 'promoter';
+  const isPromoter = user?.role === 'promoter' || user?.role === 'organizer';
 
   const { data: overview, isLoading } = useQuery({
     queryKey: ['analytics-overview'],

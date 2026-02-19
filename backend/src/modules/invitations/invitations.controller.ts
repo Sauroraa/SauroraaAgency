@@ -29,7 +29,7 @@ export class InvitationsController {
   @Roles('admin')
   @ApiBearerAuth()
   create(
-    @Body() body: { email: string; role: 'admin' | 'manager' | 'promoter' },
+    @Body() body: { email: string; role: 'admin' | 'manager' | 'promoter' | 'organizer' },
     @CurrentUser() user: any,
   ) {
     return this.invitationsService.create(body.email, body.role, user.id, `${user.firstName} ${user.lastName}`);

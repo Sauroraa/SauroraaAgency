@@ -40,13 +40,22 @@ export function DashboardSidebar({ collapsed, onToggle }: { collapsed: boolean; 
     { href: '/dashboard/presskits', icon: FileText, label: t.dashboard.presskits },
     { href: '/dashboard/settings', icon: Settings, label: t.dashboard.settings },
   ];
+  const organizerLinks = [
+    { href: '/dashboard', icon: LayoutDashboard, label: t.dashboard.dashboard },
+    { href: '/dashboard/artists', icon: Music, label: t.dashboard.artists },
+    { href: '/dashboard/bookings', icon: Calendar, label: t.dashboard.bookings },
+    { href: '/dashboard/presskits', icon: FileText, label: t.dashboard.presskits },
+    { href: '/dashboard/settings', icon: Settings, label: t.dashboard.settings },
+  ];
 
   const links =
     user?.role === 'admin'
       ? adminLinks
       : user?.role === 'manager'
         ? managerLinks
-        : promoterLinks;
+        : user?.role === 'organizer'
+          ? organizerLinks
+          : promoterLinks;
 
   const handleLogout = async () => {
     try {

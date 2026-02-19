@@ -28,6 +28,9 @@ export interface Booking {
   travelNeeded: boolean;
   quotedAmount: number | null;
   quotePdfUrl: string | null;
+  quoteSentAt: string | null;
+  digitalSignature: string | null;
+  signedAt: string | null;
   assignedTo: string | null;
   artist?: Artist;
   comments?: BookingComment[];

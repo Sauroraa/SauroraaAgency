@@ -17,6 +17,16 @@ export class PublicBookingsController {
     const ip = req.ip || req.socket.remoteAddress || '0.0.0.0';
     return this.bookingsService.submitPublic(dto, ip);
   }
+
+  @Get('contracts/:token')
+  getContract(@Param('token') token: string) {
+    return this.bookingsService.getContractByToken(token);
+  }
+
+  @Post('contracts/:token/sign')
+  signContract(@Param('token') token: string, @Body() body: { signature: string }) {
+    return this.bookingsService.signContractByToken(token, body.signature);
+  }
 }
 
 @ApiTags('Bookings')
@@ -25,6 +35,12 @@ export class PublicBookingsController {
 @UseGuards(JwtAuthGuard)
 export class BookingsController {
   constructor(private readonly bookingsService: BookingsService) {}
+
+  @Post()
+  create(@Body() dto: CreateBookingDto, @Req() req: Request) {
+    const ip = req.ip || req.socket.remoteAddress || '0.0.0.0';
+    return this.bookingsService.submitAuthenticated(dto, ip);
+  }
 
   @Get()
   findAll(@Query() pagination: PaginationDto, @Query('status') status?: string) {
@@ -67,5 +83,14 @@ export class BookingsController {
   @Patch(':id/assign')
   assign(@Param('id') id: string, @Body() body: { userId: string }) {
     return this.bookingsService.assignTo(id, body.userId);
+  }
+
+  @Post(':id/send-contract')
+  sendContract(
+    @Param('id') id: string,
+    @Body() body: { quotedAmount?: number; quotePdfUrl?: string; customMessage?: string; expiresInHours?: number },
+    @CurrentUser('id') userId: string,
+  ) {
+    return this.bookingsService.sendContractForSignature(id, body, userId);
   }
 }
