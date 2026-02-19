@@ -6,6 +6,7 @@ import { Artist } from './entities/artist.entity';
 import { Genre } from './entities/genre.entity';
 import { ArtistMedia } from './entities/artist-media.entity';
 import { Booking } from '@/modules/bookings/entities/booking.entity';
+import { Presskit } from '@/modules/presskits/entities/presskit.entity';
 import { CreateArtistDto } from './dto/create-artist.dto';
 import { FilterArtistsDto } from './dto/filter-artists.dto';
 
@@ -20,6 +21,8 @@ export class ArtistsService {
     private readonly mediaRepo: Repository<ArtistMedia>,
     @InjectRepository(Booking)
     private readonly bookingRepo: Repository<Booking>,
+    @InjectRepository(Presskit)
+    private readonly presskitRepo: Repository<Presskit>,
   ) {}
 
   async findAllPublic(filters: FilterArtistsDto) {
@@ -109,15 +112,135 @@ export class ArtistsService {
     return artist;
   }
 
-  async create(dto: CreateArtistDto): Promise<Artist> {
-    const slug = slugify(dto.name, { lower: true, strict: true });
-    const artist = this.artistRepo.create({ ...dto, slug });
+  async create(dto: CreateArtistDto, createdById?: string): Promise<Artist> {
+    const {
+      genreIds,
+      media,
+      createPresskit,
+      presskitTitle,
+      presskitTemplate,
+      presskitSections,
+      technicalRider,
+      hospitalityRider,
+      stagePlotUrl,
+      inputListUrl,
+      ...artistPayload
+    } = dto;
 
-    if (dto.genreIds?.length) {
-      artist.genres = await this.genreRepo.findBy({ id: In(dto.genreIds) });
+    const slug = slugify(dto.name, { lower: true, strict: true });
+    const artist = this.artistRepo.create({ ...artistPayload, slug });
+
+    if (genreIds?.length) {
+      artist.genres = await this.genreRepo.findBy({ id: In(genreIds) });
     }
 
-    return this.artistRepo.save(artist);
+    const savedArtist = await this.artistRepo.save(artist);
+
+    if (Array.isArray(media) && media.length) {
+      const mediaRows = media
+        .filter((item) => item?.url && item?.type)
+        .map((item, index) =>
+          this.mediaRepo.create({
+            artistId: savedArtist.id,
+            type: item.type,
+            url: item.url,
+            thumbnailUrl: item.thumbnailUrl || null,
+            title: item.title || null,
+            sortOrder: item.sortOrder ?? index,
+          }),
+        );
+
+      if (mediaRows.length) {
+        await this.mediaRepo.save(mediaRows);
+      }
+    }
+
+    if ((createPresskit ?? true) && createdById) {
+      const defaultSections: any[] = [];
+
+      if (savedArtist.bioFull || savedArtist.bioShort) {
+        defaultSections.push({
+          type: 'biography',
+          title: 'Biography',
+          content: savedArtist.bioFull || savedArtist.bioShort,
+          visible: true,
+        });
+      }
+
+      const imageUrls = (media || []).filter((m) => m.type === 'image').map((m) => m.url);
+      if (imageUrls.length) {
+        defaultSections.push({
+          type: 'gallery',
+          title: 'Photos',
+          content: imageUrls.join('\n'),
+          visible: true,
+        });
+      }
+
+      const videoUrls = (media || []).filter((m) => m.type === 'video').map((m) => m.url);
+      if (videoUrls.length) {
+        defaultSections.push({
+          type: 'videos',
+          title: 'Videos',
+          content: videoUrls.join('\n'),
+          visible: true,
+        });
+      }
+
+      if (technicalRider) {
+        defaultSections.push({
+          type: 'technical',
+          title: 'Technical Rider',
+          content: technicalRider,
+          visible: true,
+        });
+      }
+
+      if (hospitalityRider) {
+        defaultSections.push({
+          type: 'custom',
+          title: 'Hospitality Rider',
+          content: hospitalityRider,
+          visible: true,
+        });
+      }
+
+      if (stagePlotUrl) {
+        defaultSections.push({
+          type: 'custom',
+          title: 'Stage Plot',
+          content: stagePlotUrl,
+          visible: true,
+        });
+      }
+
+      if (inputListUrl) {
+        defaultSections.push({
+          type: 'custom',
+          title: 'Input List',
+          content: inputListUrl,
+          visible: true,
+        });
+      }
+
+      const sections = Array.isArray(presskitSections) && presskitSections.length
+        ? presskitSections
+        : defaultSections;
+
+      await this.presskitRepo.save(
+        this.presskitRepo.create({
+          artistId: savedArtist.id,
+          createdById,
+          title: presskitTitle || `${savedArtist.name} - Presskit`,
+          template: presskitTemplate || 'event',
+          sections,
+          isEventReady: false,
+          status: 'draft',
+        }),
+      );
+    }
+
+    return this.findById(savedArtist.id);
   }
 
   async update(id: string, dto: Partial<CreateArtistDto>): Promise<Artist> {

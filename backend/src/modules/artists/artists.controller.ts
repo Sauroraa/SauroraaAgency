@@ -6,6 +6,7 @@ import { FilterArtistsDto } from './dto/filter-artists.dto';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 import { RolesGuard } from '@/common/guards/roles.guard';
 import { Roles } from '@/common/decorators/roles.decorator';
+import { CurrentUser } from '@/common/decorators/current-user.decorator';
 
 // Public endpoints
 @ApiTags('Artists (Public)')
@@ -61,8 +62,8 @@ export class ArtistsController {
 
   @Post()
   @Roles('admin')
-  create(@Body() dto: CreateArtistDto) {
-    return this.artistsService.create(dto);
+  create(@Body() dto: CreateArtistDto, @CurrentUser('id') userId: string) {
+    return this.artistsService.create(dto, userId);
   }
 
   @Patch(':id')

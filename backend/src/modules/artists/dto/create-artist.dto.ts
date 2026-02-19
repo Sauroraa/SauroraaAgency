@@ -1,6 +1,31 @@
 import { IsString, IsOptional, IsEnum, IsNumber, IsBoolean, IsArray } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
+class CreateArtistMediaDto {
+  @ApiProperty({ enum: ['image', 'video', 'audio'] })
+  @IsEnum(['image', 'video', 'audio'])
+  type: 'image' | 'video' | 'audio';
+
+  @ApiProperty()
+  @IsString()
+  url: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  thumbnailUrl?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsNumber()
+  sortOrder?: number;
+}
+
 export class CreateArtistDto {
   @ApiProperty()
   @IsString()
@@ -94,6 +119,61 @@ export class CreateArtistDto {
   @IsOptional()
   @IsBoolean()
   isCurated?: boolean;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  profileImageUrl?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  coverImageUrl?: string;
+
+  @ApiPropertyOptional({ type: [CreateArtistMediaDto] })
+  @IsOptional()
+  @IsArray()
+  media?: CreateArtistMediaDto[];
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  technicalRider?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  hospitalityRider?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  stagePlotUrl?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  inputListUrl?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  presskitTitle?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  presskitTemplate?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsArray()
+  presskitSections?: any[];
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  createPresskit?: boolean;
 
   @ApiPropertyOptional({ type: [Number] })
   @IsOptional()
