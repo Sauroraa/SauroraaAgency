@@ -1,4 +1,5 @@
 import { api } from '@/lib/api';
+import { useAuthStore } from '@/stores/authStore';
 
 export type UploadBucket = 'artists' | 'presskits' | 'bookings' | 'avatars';
 
@@ -13,6 +14,11 @@ export async function uploadToVps(
   entityType?: string,
   entityId?: string,
 ): Promise<{ id: string; url: string; originalName: string; mimeType: string }> {
+  const token = useAuthStore.getState().accessToken;
+  if (!token) {
+    throw new Error('Authentication required for upload.');
+  }
+
   const formData = new FormData();
   formData.append('file', file);
 
@@ -22,7 +28,7 @@ export async function uploadToVps(
   if (entityId) params.set('entityId', entityId);
 
   const res = await api.post(`/files/upload?${params.toString()}`, formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
+    headers: { Authorization: `Bearer ${token}` },
   });
   const fileEntity = res.data.data || res.data;
 

@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Delete, Param, UseGuards, UseInterceptors, UploadedFile, Query, StreamableFile } from '@nestjs/common';
+import { BadRequestException, Controller, Post, Get, Delete, Param, UseGuards, UseInterceptors, UploadedFile, Query, StreamableFile } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiBearerAuth, ApiConsumes } from '@nestjs/swagger';
 import { FilesService } from './files.service';
@@ -28,6 +28,9 @@ export class FilesController {
     @Query('entityId') entityId?: string,
     @CurrentUser('id') userId?: string,
   ) {
+    if (!file) {
+      throw new BadRequestException('No file received. Use multipart/form-data with "file" field.');
+    }
     return this.filesService.upload(file, bucket || 'artists', userId, entityType, entityId);
   }
 

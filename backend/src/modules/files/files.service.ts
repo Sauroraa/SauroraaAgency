@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { BadRequestException, Injectable, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
@@ -72,6 +72,14 @@ export class FilesService implements OnModuleInit {
     entityType?: string,
     entityId?: string,
   ): Promise<FileEntity> {
+    if (!file) {
+      throw new BadRequestException('File payload is required.');
+    }
+
+    if (!this.buckets.includes(bucket)) {
+      throw new BadRequestException(`Invalid bucket "${bucket}".`);
+    }
+
     const ext = file.originalname.split('.').pop();
     const objectKey = `${uuidv4()}.${ext}`;
 
