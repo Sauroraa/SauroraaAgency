@@ -1,19 +1,36 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
-import { Users, Shield } from 'lucide-react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Users, Shield, Trash2 } from 'lucide-react';
 import { api } from '@/lib/api';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { Button } from '@/components/ui/Button';
+import { useAuthStore } from '@/stores/authStore';
+import { useToastStore } from '@/stores/toastStore';
 
 export default function ManagersPage() {
+  const queryClient = useQueryClient();
+  const addToast = useToastStore((s) => s.addToast);
+  const currentUser = useAuthStore((s) => s.user);
+  const isAdmin = currentUser?.role === 'admin';
+
   const { data, isLoading } = useQuery({
     queryKey: ['users'],
     queryFn: async () => {
       const res = await api.get('/users?limit=50');
       return res.data.data || res.data;
     },
+  });
+
+  const deactivateUser = useMutation({
+    mutationFn: async (userId: string) => api.delete(`/users/${userId}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      addToast('success', 'Compte désactivé avec succès');
+    },
+    onError: () => addToast('error', 'Impossible de désactiver ce compte'),
   });
 
   const users = data?.items || [];
@@ -39,35 +56,54 @@ export default function ManagersPage() {
                 <th className="text-left py-3 px-6 text-[var(--text-muted)] font-medium">Role</th>
                 <th className="text-left py-3 px-6 text-[var(--text-muted)] font-medium">Status</th>
                 <th className="text-left py-3 px-6 text-[var(--text-muted)] font-medium">Last Login</th>
+                {isAdmin && <th className="text-left py-3 px-6 text-[var(--text-muted)] font-medium">Actions</th>}
               </tr>
             </thead>
             <tbody>
-              {users.map((user: any) => (
-                <tr key={user.id} className="border-b border-[var(--border-color)] hover:bg-dark-800/30">
-                  <td className="py-3 px-6">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-aurora-cyan to-aurora-violet flex items-center justify-center text-xs font-bold">
-                        {user.firstName?.[0]}{user.lastName?.[0]}
+              {users.map((user: any) => {
+                const isSelf = currentUser?.id === user.id;
+                const canDeactivate = isAdmin && !isSelf && user.isActive;
+
+                return (
+                  <tr key={user.id} className="border-b border-[var(--border-color)] hover:bg-dark-800/30">
+                    <td className="py-3 px-6">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-aurora-cyan to-aurora-violet flex items-center justify-center text-xs font-bold">
+                          {user.firstName?.[0]}{user.lastName?.[0]}
+                        </div>
+                        <span className="font-medium">{user.firstName} {user.lastName}</span>
                       </div>
-                      <span className="font-medium">{user.firstName} {user.lastName}</span>
-                    </div>
-                  </td>
-                  <td className="py-3 px-6 text-[var(--text-secondary)]">{user.email}</td>
-                  <td className="py-3 px-6">
-                    <Badge variant={user.role === 'admin' ? 'info' : user.role === 'promoter' ? 'warning' : 'default'}>
-                      {user.role === 'admin' ? <><Shield size={10} className="mr-1" /> Admin</> : user.role === 'promoter' ? 'Promoter' : 'Manager'}
-                    </Badge>
-                  </td>
-                  <td className="py-3 px-6">
-                    <Badge variant={user.isActive ? 'success' : 'danger'}>
-                      {user.isActive ? 'Active' : 'Inactive'}
-                    </Badge>
-                  </td>
-                  <td className="py-3 px-6 text-[var(--text-muted)] text-xs">
-                    {user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleString() : 'Never'}
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                    <td className="py-3 px-6 text-[var(--text-secondary)]">{user.email}</td>
+                    <td className="py-3 px-6">
+                      <Badge variant={user.role === 'admin' ? 'info' : user.role === 'promoter' ? 'warning' : 'default'}>
+                        {user.role === 'admin' ? <><Shield size={10} className="mr-1" /> Admin</> : user.role === 'promoter' ? 'Promoter' : 'Manager'}
+                      </Badge>
+                    </td>
+                    <td className="py-3 px-6">
+                      <Badge variant={user.isActive ? 'success' : 'danger'}>
+                        {user.isActive ? 'Active' : 'Inactive'}
+                      </Badge>
+                    </td>
+                    <td className="py-3 px-6 text-[var(--text-muted)] text-xs">
+                      {user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleString() : 'Never'}
+                    </td>
+                    {isAdmin && (
+                      <td className="py-3 px-6">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          disabled={!canDeactivate || deactivateUser.isPending}
+                          onClick={() => deactivateUser.mutate(user.id)}
+                          className="text-red-400 hover:bg-red-500/10 disabled:opacity-50"
+                        >
+                          <Trash2 size={14} /> Supprimer
+                        </Button>
+                      </td>
+                    )}
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         )}
