@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Param, Body, Query, Req, UseGuards, StreamableFile, Header, ForbiddenException } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Param, Body, Query, Req, UseGuards, StreamableFile, Header, ForbiddenException } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { Request } from 'express';
 import { BookingsService } from './bookings.service';
@@ -99,6 +99,12 @@ export class BookingsController {
   @Roles('admin', 'manager')
   assign(@Param('id') id: string, @Body() body: { userId: string }) {
     return this.bookingsService.assignTo(id, body.userId);
+  }
+
+  @Delete(':id')
+  @Roles('admin')
+  remove(@Param('id') id: string) {
+    return this.bookingsService.deleteById(id);
   }
 
   @Post(':id/send-contract')

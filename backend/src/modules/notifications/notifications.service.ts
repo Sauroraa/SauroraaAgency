@@ -111,7 +111,7 @@ export class NotificationsService {
     options?: { language?: 'fr' | 'en' | 'nl' },
   ): Promise<void> {
     const language = options?.language || 'fr';
-    const registerUrl = `${this.config.get('APP_URL')}/register?token=${token}`;
+    const registerUrl = `${this.config.get('APP_URL')}/register?token=${token}&email=${encodeURIComponent(email)}`;
     const copy = {
       fr: {
         subject: 'Invitation Sauroraa Agency',

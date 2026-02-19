@@ -1,23 +1,26 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { MessageSquare, Send, Clock, MapPin, Users as UsersIcon, DollarSign, FileSignature } from 'lucide-react';
+import { MessageSquare, Send, Clock, MapPin, Users as UsersIcon, DollarSign, FileSignature, Trash2 } from 'lucide-react';
 import { api } from '@/lib/api';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useToastStore } from '@/stores/toastStore';
+import { useAuthStore } from '@/stores/authStore';
 import { BOOKING_STATUSES, COUNTRIES } from '@/lib/constants';
 import type { Booking } from '@/types/booking';
 
 export default function BookingDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const router = useRouter();
   const queryClient = useQueryClient();
   const addToast = useToastStore((s) => s.addToast);
+  const user = useAuthStore((s) => s.user);
   const [comment, setComment] = useState('');
   const [quotedAmount, setQuotedAmount] = useState('');
   const [quotePdfUrl, setQuotePdfUrl] = useState('');
@@ -80,6 +83,21 @@ export default function BookingDetailPage() {
     onError: (error: any) => {
       const message = error?.response?.data?.message;
       addToast('error', Array.isArray(message) ? message[0] : (message || 'Impossible d’envoyer le contrat'));
+    },
+  });
+
+  const deleteBookingMutation = useMutation({
+    mutationFn: async () => {
+      await api.delete(`/bookings/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['bookings'] });
+      addToast('success', 'Contrat supprimé');
+      router.push('/dashboard/bookings');
+    },
+    onError: (error: any) => {
+      const message = error?.response?.data?.message;
+      addToast('error', Array.isArray(message) ? message[0] : (message || 'Impossible de supprimer le contrat'));
     },
   });
 
@@ -235,6 +253,19 @@ export default function BookingDetailPage() {
               </Button>
               {booking.signedAt && (
                 <p className="text-xs text-emerald-400">Signé le {new Date(booking.signedAt).toLocaleString()}</p>
+              )}
+              {user?.role === 'admin' && (
+                <Button
+                  variant="danger"
+                  onClick={() => {
+                    if (window.confirm('Supprimer définitivement ce contrat ?')) {
+                      deleteBookingMutation.mutate();
+                    }
+                  }}
+                  isLoading={deleteBookingMutation.isPending}
+                >
+                  <Trash2 size={14} /> Supprimer le contrat
+                </Button>
               )}
             </div>
           </Card>

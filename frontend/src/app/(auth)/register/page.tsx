@@ -17,6 +17,7 @@ function RegisterPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get('token') || '';
+  const emailFromQuery = searchParams.get('email') || '';
   const setAuth = useAuthStore((s) => s.setAuth);
   const addToast = useToastStore((s) => s.addToast);
 
@@ -41,6 +42,11 @@ function RegisterPageContent() {
     companyName: '',
     vatNumber: '',
   });
+
+  useEffect(() => {
+    if (!emailFromQuery) return;
+    setForm((prev) => ({ ...prev, email: emailFromQuery }));
+  }, [emailFromQuery]);
 
   useEffect(() => {
     if (!token) return;

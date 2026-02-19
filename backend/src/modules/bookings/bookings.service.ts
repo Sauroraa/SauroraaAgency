@@ -140,6 +140,11 @@ export class BookingsService {
     return this.bookingRepo.save(booking);
   }
 
+  async deleteById(id: string): Promise<void> {
+    const booking = await this.findById(id);
+    await this.bookingRepo.remove(booking);
+  }
+
   private signContractToken(bookingId: string, requesterEmail: string, expiresInHours?: number) {
     const payload = { type: 'booking_contract', bookingId, requesterEmail };
     return this.jwtService.sign(payload, {
