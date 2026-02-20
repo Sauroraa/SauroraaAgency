@@ -7,12 +7,26 @@ import { Badge } from '@/components/ui/Badge';
 import { COUNTRIES } from '@/lib/constants';
 import type { Artist } from '@/types/artist';
 
+function resolveAssetUrl(url?: string | null) {
+  if (!url) return null;
+  const trimmed = url.trim();
+  if (!trimmed) return null;
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
+  if (trimmed.startsWith('/')) {
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/+$/, '');
+    if (appUrl) return `${appUrl}${trimmed}`;
+  }
+  return trimmed;
+}
+
 export function ArtistCard({ artist }: { artist: Artist }) {
   const availabilityVariant = {
     available: 'success' as const,
     limited: 'warning' as const,
     unavailable: 'danger' as const,
   };
+  const galleryImage = artist.media?.find((m) => m.type === 'image')?.url || null;
+  const coverImage = resolveAssetUrl(artist.coverImageUrl) || resolveAssetUrl(galleryImage);
 
   return (
     <Link href={`/artists/${artist.slug}`}>
@@ -20,8 +34,15 @@ export function ArtistCard({ artist }: { artist: Artist }) {
         whileHover={{ y: -4 }}
         className="group relative aspect-[3/4] rounded-2xl overflow-hidden bg-dark-800 border border-[var(--border-color)] hover:border-aurora-cyan/30 transition-all duration-500"
       >
-        {/* Placeholder image / gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-aurora-cyan/10 via-aurora-violet/5 to-transparent" />
+        {coverImage ? (
+          <div
+            className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
+            style={{ backgroundImage: `url("${coverImage}")` }}
+          />
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-aurora-cyan/10 via-aurora-violet/5 to-transparent" />
+        )}
+        <div className="absolute inset-0 bg-dark-900/35" />
         <div className="absolute inset-0 bg-gradient-to-t from-dark-900 via-dark-900/50 to-transparent" />
 
         {/* Top badges */}
