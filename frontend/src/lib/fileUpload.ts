@@ -5,7 +5,14 @@ export type UploadBucket = 'artists' | 'presskits' | 'bookings' | 'avatars';
 
 function buildPublicFileUrl(fileId: string) {
   const baseApiUrl = (process.env.NEXT_PUBLIC_API_URL || '/api').replace(/\/+$/, '');
-  return `${baseApiUrl}/public/files/${fileId}`;
+  const relativePath = `${baseApiUrl}/public/files/${fileId}`;
+  if (relativePath.startsWith('http://') || relativePath.startsWith('https://')) {
+    return relativePath;
+  }
+  if (typeof window !== 'undefined') {
+    return `${window.location.origin}${relativePath.startsWith('/') ? '' : '/'}${relativePath}`;
+  }
+  return relativePath;
 }
 
 export async function uploadToVps(

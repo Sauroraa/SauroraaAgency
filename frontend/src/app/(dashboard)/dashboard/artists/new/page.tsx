@@ -6,6 +6,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Save, Plus, Trash2, Upload } from 'lucide-react';
 import Link from 'next/link';
+import axios from 'axios';
 import { api } from '@/lib/api';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -27,6 +28,28 @@ type ArtistMediaForm = {
   thumbnailUrl: string;
   title: string;
 };
+
+const MAX_IMAGE_UPLOAD_BYTES = 20 * 1024 * 1024;
+
+function extractErrorMessage(error: unknown, fallback: string): string {
+  if (axios.isAxiosError(error)) {
+    const message = error.response?.data?.message;
+    if (typeof message === 'string') return message;
+    if (Array.isArray(message) && message.length) return String(message[0]);
+  }
+  if (error instanceof Error && error.message) return error.message;
+  return fallback;
+}
+
+function validateImageFile(file: File): string | null {
+  if (!file.type.startsWith('image/')) {
+    return 'Fichier invalide: image requise.';
+  }
+  if (file.size > MAX_IMAGE_UPLOAD_BYTES) {
+    return 'Image trop lourde (max 20MB).';
+  }
+  return null;
+}
 
 export default function NewArtistPage() {
   const router = useRouter();
@@ -164,13 +187,18 @@ export default function NewArtistPage() {
 
   const uploadProfileImage = async (file?: File) => {
     if (!file) return;
+    const validationError = validateImageFile(file);
+    if (validationError) {
+      addToast('error', validationError);
+      return;
+    }
     try {
       setUploadingProfile(true);
-      const uploaded = await uploadToVps(file, 'artists', 'artist_profile');
+      const uploaded = await uploadToVps(file, 'artists');
       updateField('profileImageUrl', uploaded.url);
       addToast('success', 'Image profil uploadée');
-    } catch {
-      addToast('error', 'Upload image profil impossible');
+    } catch (error) {
+      addToast('error', extractErrorMessage(error, 'Upload image profil impossible'));
     } finally {
       setUploadingProfile(false);
     }
@@ -178,13 +206,18 @@ export default function NewArtistPage() {
 
   const uploadCoverImage = async (file?: File) => {
     if (!file) return;
+    const validationError = validateImageFile(file);
+    if (validationError) {
+      addToast('error', validationError);
+      return;
+    }
     try {
       setUploadingCover(true);
-      const uploaded = await uploadToVps(file, 'artists', 'artist_cover');
+      const uploaded = await uploadToVps(file, 'artists');
       updateField('coverImageUrl', uploaded.url);
       addToast('success', 'Image cover uploadée');
-    } catch {
-      addToast('error', 'Upload image cover impossible');
+    } catch (error) {
+      addToast('error', extractErrorMessage(error, 'Upload image cover impossible'));
     } finally {
       setUploadingCover(false);
     }
@@ -196,14 +229,14 @@ export default function NewArtistPage() {
       setUploadingMediaIndex(index);
       const item = mediaItems[index];
       const bucket = item.type === 'audio' ? 'presskits' : 'artists';
-      const uploaded = await uploadToVps(file, bucket, 'artist_media');
+      const uploaded = await uploadToVps(file, bucket);
       updateMediaItem(index, 'url', uploaded.url);
       if (!item.title) {
         updateMediaItem(index, 'title', uploaded.originalName);
       }
       addToast('success', 'Média uploadé');
-    } catch {
-      addToast('error', 'Upload média impossible');
+    } catch (error) {
+      addToast('error', extractErrorMessage(error, 'Upload média impossible'));
     } finally {
       setUploadingMediaIndex(null);
     }
@@ -313,6 +346,11 @@ export default function NewArtistPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div className="space-y-2">
               <Input label="Image profil (URL)" value={form.profileImageUrl} onChange={(e) => updateField('profileImageUrl', e.target.value)} />
+              {form.profileImageUrl && (
+                <div className="rounded-lg border border-dark-500 overflow-hidden">
+                  <img src={form.profileImageUrl} alt="Preview profil" className="h-40 w-full object-cover" />
+                </div>
+              )}
               <label className="inline-flex items-center gap-2 text-xs text-[var(--text-secondary)] cursor-pointer">
                 <Upload size={12} />
                 {uploadingProfile ? 'Upload...' : 'Uploader image profil'}
@@ -327,6 +365,11 @@ export default function NewArtistPage() {
             </div>
             <div className="space-y-2">
               <Input label="Image cover (URL)" value={form.coverImageUrl} onChange={(e) => updateField('coverImageUrl', e.target.value)} />
+              {form.coverImageUrl && (
+                <div className="rounded-lg border border-dark-500 overflow-hidden">
+                  <img src={form.coverImageUrl} alt="Preview cover" className="h-40 w-full object-cover" />
+                </div>
+              )}
               <label className="inline-flex items-center gap-2 text-xs text-[var(--text-secondary)] cursor-pointer">
                 <Upload size={12} />
                 {uploadingCover ? 'Upload...' : 'Uploader image cover'}
