@@ -11,9 +11,10 @@ export function HeroSection() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [soundOn, setSoundOn] = useState(false);
   const { t } = useI18n();
+  const ambientAudioSrc = process.env.NEXT_PUBLIC_AMBIENT_AUDIO_URL;
 
   const toggleSound = async () => {
-    if (!audioRef.current) return;
+    if (!audioRef.current || !ambientAudioSrc) return;
     if (soundOn) {
       audioRef.current.pause();
       setSoundOn(false);
@@ -30,28 +31,26 @@ export function HeroSection() {
   return (
     <section className="relative h-screen flex items-center justify-center overflow-hidden">
       <div className="absolute inset-0 bg-dark-900">
-        <video
-          className="absolute inset-0 h-full w-full object-cover opacity-40"
-          autoPlay
-          muted
-          loop
-          playsInline
-          poster="/images/placeholder/artist-1.webp"
-        >
-          <source src="/videos/hero.mp4" type="video/mp4" />
-        </video>
+        <div
+          className="absolute inset-0 h-full w-full bg-cover bg-center opacity-40"
+          style={{ backgroundImage: "url('/images/header.png')" }}
+        />
         <div className="absolute inset-0 bg-gradient-to-b from-dark-900/50 via-transparent to-dark-900" />
         <div className="absolute inset-0 bg-aurora-gradient opacity-30" />
       </div>
 
-      <audio ref={audioRef} src="/audio/ambient.mp3" loop preload="none" />
-      <button
-        onClick={toggleSound}
-        className="absolute right-6 top-24 z-20 inline-flex items-center gap-2 rounded-full border border-white/20 bg-dark-900/50 px-3 py-1.5 text-xs text-white/80 backdrop-blur hover:text-aurora-cyan"
-      >
-        {soundOn ? <Volume2 size={14} /> : <VolumeX size={14} />}
-        {soundOn ? t.home.ambientOn : t.home.ambientOff}
-      </button>
+      {ambientAudioSrc && (
+        <>
+          <audio ref={audioRef} src={ambientAudioSrc} loop preload="none" />
+          <button
+            onClick={toggleSound}
+            className="absolute right-6 top-24 z-20 inline-flex items-center gap-2 rounded-full border border-white/20 bg-dark-900/50 px-3 py-1.5 text-xs text-white/80 backdrop-blur hover:text-aurora-cyan"
+          >
+            {soundOn ? <Volume2 size={14} /> : <VolumeX size={14} />}
+            {soundOn ? t.home.ambientOn : t.home.ambientOff}
+          </button>
+        </>
+      )}
 
       <div className="relative z-10 text-center max-w-5xl mx-auto px-6">
         <motion.div

@@ -4,7 +4,7 @@ import { useAuthStore } from '@/stores/authStore';
 export type UploadBucket = 'artists' | 'presskits' | 'bookings' | 'avatars';
 
 function buildPublicFileUrl(fileId: string) {
-  const baseApiUrl = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api').replace(/\/+$/, '');
+  const baseApiUrl = (process.env.NEXT_PUBLIC_API_URL || '/api').replace(/\/+$/, '');
   return `${baseApiUrl}/public/files/${fileId}`;
 }
 

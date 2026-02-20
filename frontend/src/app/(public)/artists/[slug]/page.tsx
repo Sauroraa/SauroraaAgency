@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import { ArtistProfileClient } from '@/components/artists/ArtistProfileClient';
 import type { Artist } from '@/types/artist';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+const API_URL = (process.env.NEXT_PUBLIC_API_URL || `${SITE_URL}/api`).replace(/\/+$/, '');
 
 async function fetchArtist(slug: string): Promise<Artist | null> {
   try {

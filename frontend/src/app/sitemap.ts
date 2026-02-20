@@ -1,7 +1,7 @@
 import type { MetadataRoute } from 'next';
 
 const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+const API_URL = (process.env.NEXT_PUBLIC_API_URL || `${SITE_URL}/api`).replace(/\/+$/, '');
 
 async function fetchArtistSlugs(): Promise<string[]> {
   try {

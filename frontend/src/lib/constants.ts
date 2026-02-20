@@ -1,6 +1,6 @@
 export const SITE_NAME = 'Sauroraa Agency';
 export const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://sauroraa.be';
-export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+export const API_URL = (process.env.NEXT_PUBLIC_API_URL || '/api').replace(/\/+$/, '');
 
 export const COUNTRIES: Record<string, string> = {
   BEL: 'Belgium', FRA: 'France', DEU: 'Germany', NLD: 'Netherlands',
