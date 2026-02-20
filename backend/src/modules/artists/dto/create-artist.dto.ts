@@ -92,6 +92,16 @@ export class CreateArtistDto {
 
   @ApiPropertyOptional()
   @IsOptional()
+  @IsString()
+  metaTitle?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  metaDescription?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
   @IsNumber()
   monthlyListeners?: number;
 

@@ -51,6 +51,17 @@ function validateImageFile(file: File): string | null {
   return null;
 }
 
+function compactText(text: string): string {
+  return text.replace(/\s+/g, ' ').trim();
+}
+
+function buildMetaDescription(bioShort?: string, bioFull?: string): string | undefined {
+  const source = compactText(bioShort || bioFull || '');
+  if (!source) return undefined;
+  if (source.length <= 160) return source;
+  return `${source.slice(0, 157).trimEnd()}...`;
+}
+
 export default function NewArtistPage() {
   const router = useRouter();
   const role = useAuthStore((s) => s.user?.role);
@@ -104,6 +115,14 @@ export default function NewArtistPage() {
     }
   }, [role, router]);
 
+  useEffect(() => {
+    setForm((prev) => ({
+      ...prev,
+      metaTitle: prev.name.trim(),
+      metaDescription: buildMetaDescription(prev.bioShort, prev.bioFull) || '',
+    }));
+  }, [form.name, form.bioShort, form.bioFull]);
+
   const { data: genres = [] } = useQuery<Genre[]>({
     queryKey: ['genres'],
     queryFn: async () => {
@@ -115,6 +134,10 @@ export default function NewArtistPage() {
   const mutation = useMutation({
     mutationFn: async () => {
       const clean = (value: string) => value.trim() || undefined;
+      const resolvedName = clean(form.name);
+      const resolvedMetaTitle = clean(form.metaTitle) || resolvedName;
+      const resolvedMetaDescription = clean(form.metaDescription)
+        || buildMetaDescription(clean(form.bioShort), clean(form.bioFull));
       const cleanedMedia = mediaItems
         .map((item, index) => ({
           type: item.type,
@@ -138,8 +161,8 @@ export default function NewArtistPage() {
         instagramUrl: clean(form.instagramUrl),
         facebookUrl: clean(form.facebookUrl),
         websiteUrl: clean(form.websiteUrl),
-        metaTitle: clean(form.metaTitle),
-        metaDescription: clean(form.metaDescription),
+        metaTitle: resolvedMetaTitle,
+        metaDescription: resolvedMetaDescription,
         profileImageUrl: clean(form.profileImageUrl),
         coverImageUrl: clean(form.coverImageUrl),
         accountEmail: clean(form.accountEmail),
