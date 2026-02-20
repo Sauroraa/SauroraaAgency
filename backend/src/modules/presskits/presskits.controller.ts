@@ -53,18 +53,14 @@ export class PresskitsController {
   constructor(private readonly presskitsService: PresskitsService) {}
 
   @Get()
-  @Roles('admin', 'manager', 'organizer', 'artist')
+  @Roles('admin', 'manager', 'artist')
   async findAll(@Query() pagination: PaginationDto, @Query('artistId') artistId?: string, @CurrentUser() user?: any) {
-    if (user?.role === 'organizer') {
-      const accessibleArtistIds = await this.presskitsService.getOrganizerAccessibleArtistIds(user.email);
-      return this.presskitsService.findAll(pagination.page, pagination.limit, undefined, accessibleArtistIds);
-    }
     const scopedArtistId = user?.role === 'artist' ? user?.linkedArtistId : artistId;
     return this.presskitsService.findAll(pagination.page, pagination.limit, scopedArtistId);
   }
 
   @Get(':id')
-  @Roles('admin', 'manager', 'organizer', 'artist')
+  @Roles('admin', 'manager', 'artist')
   async findOne(@Param('id') id: string, @CurrentUser() user?: any) {
     const presskit = await this.presskitsService.findById(id);
     if (user?.role === 'artist') {
@@ -72,12 +68,6 @@ export class PresskitsController {
       const allowedByArtist = user?.linkedArtistId && presskit.artistId === user.linkedArtistId;
       if (!allowedByPresskit && !allowedByArtist) {
         throw new ForbiddenException('You can only access your own presskit');
-      }
-    }
-    if (user?.role === 'organizer') {
-      const accessibleArtistIds = await this.presskitsService.getOrganizerAccessibleArtistIds(user.email);
-      if (!accessibleArtistIds.includes(presskit.artistId)) {
-        throw new ForbiddenException('You can only access presskits linked to your active contracts');
       }
     }
     return presskit;
@@ -114,15 +104,8 @@ export class PresskitsController {
   }
 
   @Get(':id/analytics')
-  @Roles('admin', 'manager', 'organizer', 'artist')
+  @Roles('admin', 'manager', 'artist')
   async getAnalytics(@Param('id') id: string, @CurrentUser() user?: any) {
-    if (user?.role === 'organizer') {
-      const presskit = await this.presskitsService.findById(id);
-      const accessibleArtistIds = await this.presskitsService.getOrganizerAccessibleArtistIds(user.email);
-      if (!accessibleArtistIds.includes(presskit.artistId)) {
-        throw new ForbiddenException('You can only access analytics linked to your active contracts');
-      }
-    }
     if (user?.role === 'artist') {
       const presskit = await this.presskitsService.findById(id);
       const allowedByPresskit = user?.linkedPresskitId && user.linkedPresskitId === id;

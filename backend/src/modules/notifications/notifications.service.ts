@@ -38,6 +38,7 @@ export class NotificationsService {
       'contract-signature-request',
       'contract-signed',
       'artist-contract-confirmation',
+      'presskit-access-after-signature',
     ];
 
     for (const name of templateFiles) {
@@ -190,6 +191,25 @@ export class NotificationsService {
       `Booking confirmation required - ${booking.referenceCode}`,
       'artist-contract-confirmation',
       { booking, dashboardUrl },
+    );
+  }
+
+  async sendPresskitAccessAfterContractSigned(
+    email: string,
+    bookingInfo: { referenceCode: string; artistName: string; eventName?: string; requesterName?: string },
+    presskitUrl: string,
+    expiresAt: Date | null,
+  ): Promise<void> {
+    const expirationLabel = expiresAt ? new Date(expiresAt).toLocaleString() : 'No expiration';
+    await this.sendEmail(
+      email,
+      `Presskit access - ${bookingInfo.referenceCode}`,
+      'presskit-access-after-signature',
+      {
+        booking: bookingInfo,
+        presskitUrl,
+        expiresAt: expirationLabel,
+      },
     );
   }
 }

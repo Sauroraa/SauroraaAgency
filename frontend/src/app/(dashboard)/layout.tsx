@@ -29,6 +29,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     const managerAllowed = [
       '/dashboard',
       '/dashboard/artists',
+      '/dashboard/contracts',
       '/dashboard/presskits',
       '/dashboard/bookings',
       '/dashboard/analytics',
@@ -37,6 +38,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     const promoterAllowed = [
       '/dashboard',
       '/dashboard/bookings',
+      '/dashboard/contracts',
       '/dashboard/presskits',
       '/dashboard/settings',
     ];
@@ -44,7 +46,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       '/dashboard',
       '/dashboard/artists',
       '/dashboard/bookings',
-      '/dashboard/presskits',
+      '/dashboard/contracts',
       '/dashboard/settings',
     ];
     const artistAllowed = [

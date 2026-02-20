@@ -8,12 +8,14 @@ import { BookingsService } from './bookings.service';
 import { BookingsController, PublicBookingsController } from './bookings.controller';
 import { ArtistsModule } from '@/modules/artists/artists.module';
 import { User } from '@/modules/users/entities/user.entity';
+import { PresskitsModule } from '@/modules/presskits/presskits.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Booking, BookingComment, BookingStatusHistory, User]),
     JwtModule.register({}),
     ArtistsModule,
+    PresskitsModule,
   ],
   controllers: [BookingsController, PublicBookingsController],
   providers: [BookingsService],

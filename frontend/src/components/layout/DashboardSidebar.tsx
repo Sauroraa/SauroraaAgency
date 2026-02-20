@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, Music, FileText, Calendar, BarChart3,
-  Users, Mail, Shield, Settings, LogOut, ChevronLeft,
+  Users, Mail, Shield, Settings, LogOut, ChevronLeft, FileSignature,
 } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { useAuthStore } from '@/stores/authStore';
@@ -18,6 +18,7 @@ export function DashboardSidebar({ collapsed, onToggle }: { collapsed: boolean; 
   const adminLinks = [
     { href: '/dashboard', icon: LayoutDashboard, label: t.dashboard.dashboard },
     { href: '/dashboard/artists', icon: Music, label: t.dashboard.artists },
+    { href: '/dashboard/contracts', icon: FileSignature, label: 'Contrats' },
     { href: '/dashboard/presskits', icon: FileText, label: t.dashboard.presskits },
     { href: '/dashboard/bookings', icon: Calendar, label: t.dashboard.bookings },
     { href: '/dashboard/analytics', icon: BarChart3, label: t.dashboard.analytics },
@@ -29,6 +30,7 @@ export function DashboardSidebar({ collapsed, onToggle }: { collapsed: boolean; 
   const managerLinks = [
     { href: '/dashboard', icon: LayoutDashboard, label: t.dashboard.dashboard },
     { href: '/dashboard/artists', icon: Music, label: t.dashboard.myArtists },
+    { href: '/dashboard/contracts', icon: FileSignature, label: 'Contrats' },
     { href: '/dashboard/presskits', icon: FileText, label: t.dashboard.presskits },
     { href: '/dashboard/bookings', icon: Calendar, label: t.dashboard.bookings },
     { href: '/dashboard/analytics', icon: BarChart3, label: t.dashboard.analytics },
@@ -44,7 +46,7 @@ export function DashboardSidebar({ collapsed, onToggle }: { collapsed: boolean; 
     { href: '/dashboard', icon: LayoutDashboard, label: t.dashboard.dashboard },
     { href: '/dashboard/artists', icon: Music, label: t.dashboard.artists },
     { href: '/dashboard/bookings', icon: Calendar, label: t.dashboard.bookings },
-    { href: '/dashboard/presskits', icon: FileText, label: t.dashboard.presskits },
+    { href: '/dashboard/contracts', icon: FileSignature, label: 'Mes contrats' },
     { href: '/dashboard/settings', icon: Settings, label: t.dashboard.settings },
   ];
   const artistLinks = [

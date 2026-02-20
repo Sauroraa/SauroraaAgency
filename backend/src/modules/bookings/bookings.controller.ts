@@ -145,4 +145,88 @@ export class BookingsController {
   ) {
     return this.bookingsService.reviewDecision(id, body, userId);
   }
+
+  @Get(':id/contract-data')
+  @Roles('admin', 'manager', 'organizer', 'promoter', 'artist')
+  getContractData(
+    @Param('id') id: string,
+    @CurrentUser() user?: any,
+  ) {
+    return this.bookingsService.getContractData(id, user);
+  }
+
+  @Patch(':id/contract-data')
+  @Roles('admin', 'manager')
+  updateContractDataByAdmin(
+    @Param('id') id: string,
+    @Body() body: { contract: any },
+    @CurrentUser('id') userId: string,
+  ) {
+    return this.bookingsService.updateContractDataByAdmin(id, body?.contract || {}, userId);
+  }
+
+  @Patch(':id/contract-data/organizer')
+  @Roles('organizer', 'promoter')
+  updateContractDataByOrganizer(
+    @Param('id') id: string,
+    @Body() body: { contract: any },
+    @CurrentUser() user?: any,
+  ) {
+    return this.bookingsService.updateContractDataByOrganizer(id, body?.contract || {}, user);
+  }
+
+  @Post(':id/contract-sign')
+  @Roles('organizer', 'promoter')
+  signContractDirect(
+    @Param('id') id: string,
+    @Body() body: { signature: string },
+    @CurrentUser() user?: any,
+  ) {
+    return this.bookingsService.signContractDirect(id, body?.signature || '', user);
+  }
+
+  @Get(':id/contract-pdf')
+  @Roles('admin', 'manager', 'organizer', 'promoter', 'artist')
+  @Header('Content-Type', 'application/pdf')
+  async downloadContractPdf(
+    @Param('id') id: string,
+    @CurrentUser() user?: any,
+  ) {
+    const { buffer, fileName } = await this.bookingsService.generateContractPdf(id, user);
+    return new StreamableFile(buffer, {
+      disposition: `attachment; filename="${fileName}"`,
+    });
+  }
+
+  @Get(':id/contract-link')
+  @Roles('admin', 'manager', 'organizer', 'promoter')
+  getContractLink(
+    @Param('id') id: string,
+    @CurrentUser() user?: any,
+  ) {
+    return this.bookingsService.getContractSigningLinkForBooking(id, user);
+  }
+
+  @Post(':id/upload-signed-contract')
+  @Roles('admin', 'manager', 'organizer', 'promoter')
+  uploadSignedContract(
+    @Param('id') id: string,
+    @Body() body: { signedContractUrl: string; note?: string },
+    @CurrentUser() user?: any,
+  ) {
+    return this.bookingsService.submitSignedContractUpload(id, body.signedContractUrl, user, body.note);
+  }
+
+  @Get(':id/invoice')
+  @Roles('admin', 'manager', 'organizer', 'promoter')
+  @Header('Content-Type', 'application/pdf')
+  async downloadInvoice(
+    @Param('id') id: string,
+    @CurrentUser() user?: any,
+  ) {
+    const { buffer, fileName } = await this.bookingsService.generateInvoicePdf(id, user);
+    return new StreamableFile(buffer, {
+      disposition: `attachment; filename="${fileName}"`,
+    });
+  }
 }
