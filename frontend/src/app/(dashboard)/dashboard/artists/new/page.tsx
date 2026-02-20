@@ -167,7 +167,7 @@ export default function NewArtistPage() {
       addToast('success', 'Artiste créé avec presskit complet');
       router.push('/dashboard/artists');
     },
-    onError: () => addToast('error', 'Échec de création de l’artiste'),
+    onError: (error) => addToast('error', extractErrorMessage(error, 'Échec de création de l’artiste')),
   });
 
   const updateField = (field: string, value: unknown) => setForm((prev) => ({ ...prev, [field]: value }));
