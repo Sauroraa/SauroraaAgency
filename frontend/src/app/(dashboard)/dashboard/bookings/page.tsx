@@ -84,9 +84,10 @@ export default function BookingsPage() {
   });
 
   const { data: artistsData } = useQuery({
-    queryKey: ['booking-artists-select'],
+    queryKey: ['booking-artists-select', role],
     queryFn: async () => {
-      const res = await api.get('/artists?limit=100');
+      const endpoint = isOrganizer ? '/public/artists?limit=100&sortBy=newest' : '/artists?limit=100';
+      const res = await api.get(endpoint);
       return res.data.data || res.data;
     },
   });

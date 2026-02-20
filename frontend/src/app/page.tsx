@@ -43,8 +43,16 @@ export default function HomePage() {
       return res.data.data || res.data;
     },
   });
+  const { data: bookingArtistsData } = useQuery({
+    queryKey: ['home-booking-artists'],
+    queryFn: async () => {
+      const res = await publicApi.get('/public/artists?limit=100&sortBy=newest');
+      return res.data.data || res.data;
+    },
+  });
 
   const artists: Artist[] = artistsData?.items || [];
+  const bookingArtists: Artist[] = bookingArtistsData?.items || artists;
 
   const updateField = (field: string, value: string) => {
     setBookingForm((prev) => ({ ...prev, [field]: value }));
@@ -171,7 +179,7 @@ export default function HomePage() {
                     required
                   >
                     <option value="">{t.home.selectArtistPlaceholder}</option>
-                    {artists.map((artist) => (
+                    {bookingArtists.map((artist) => (
                       <option key={artist.id} value={artist.id}>{artist.name}</option>
                     ))}
                   </select>

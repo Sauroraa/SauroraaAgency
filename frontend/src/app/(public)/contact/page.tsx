@@ -31,7 +31,7 @@ function ContactPageContent() {
   const { data: artistsData } = useQuery({
     queryKey: ['artists-for-booking'],
     queryFn: async () => {
-      const res = await publicApi.get('/public/artists?limit=200');
+      const res = await publicApi.get('/public/artists?limit=100&sortBy=newest');
       return res.data.data || res.data;
     },
   });
