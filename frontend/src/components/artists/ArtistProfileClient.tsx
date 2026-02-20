@@ -11,6 +11,18 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { COUNTRIES } from '@/lib/constants';
 import type { Artist } from '@/types/artist';
 
+function resolveAssetUrl(url?: string | null) {
+  if (!url) return null;
+  const trimmed = url.trim();
+  if (!trimmed) return null;
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
+  if (trimmed.startsWith('/')) {
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/+$/, '');
+    if (appUrl) return `${appUrl}${trimmed}`;
+  }
+  return trimmed;
+}
+
 export function ArtistProfileClient({ slug, initialArtist }: { slug: string; initialArtist?: Artist | null }) {
   const { data: artist, isLoading } = useQuery<Artist>({
     queryKey: ['artist', slug],
@@ -33,12 +45,29 @@ export function ArtistProfileClient({ slug, initialArtist }: { slug: string; ini
 
   if (!artist) return <div className="text-center py-24">Artist not found</div>;
 
+  const galleryImage = artist.media?.find((m) => m.type === 'image')?.url || null;
+  const coverImage = resolveAssetUrl(artist.coverImageUrl) || resolveAssetUrl(galleryImage);
+  const profileImage = resolveAssetUrl(artist.profileImageUrl) || resolveAssetUrl(galleryImage);
+
   return (
     <div className="max-w-7xl mx-auto px-6 py-12">
       <div className="relative h-[50vh] min-h-[400px] rounded-3xl overflow-hidden mb-12">
-        <div className="absolute inset-0 bg-gradient-to-br from-aurora-cyan/20 via-aurora-violet/10 to-dark-900" />
+        {coverImage ? (
+          <div
+            className="absolute inset-0 bg-cover bg-center"
+            style={{ backgroundImage: `url("${coverImage}")` }}
+          />
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-aurora-cyan/20 via-aurora-violet/10 to-dark-900" />
+        )}
+        <div className="absolute inset-0 bg-dark-900/45" />
         <div className="absolute inset-0 bg-gradient-to-t from-dark-900 via-transparent to-transparent" />
         <div className="absolute bottom-0 left-0 right-0 p-8 md:p-12">
+          {profileImage && (
+            <div className="mb-5 h-24 w-24 rounded-2xl overflow-hidden border border-white/20 bg-dark-800/80 backdrop-blur">
+              <img src={profileImage} alt={artist.name} className="h-full w-full object-cover" />
+            </div>
+          )}
           <div className="flex flex-wrap gap-2 mb-4">
             {artist.genres?.map((g) => (
               <Badge key={g.id} variant="info">{g.name}</Badge>
