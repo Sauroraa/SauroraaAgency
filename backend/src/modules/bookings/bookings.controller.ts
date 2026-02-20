@@ -45,6 +45,23 @@ export class BookingsController {
     return this.bookingsService.submitAuthenticated(dto, ip, user);
   }
 
+  @Post('contracts/direct')
+  @Roles('admin', 'manager')
+  createDirectContract(
+    @Body()
+    body: CreateBookingDto & {
+      organizerUserId?: string;
+      quotedAmount?: number;
+      quotePdfUrl?: string;
+      customMessage?: string;
+      expiresInHours?: number;
+      sendEmail?: boolean;
+    },
+    @CurrentUser('id') userId: string,
+  ) {
+    return this.bookingsService.createDirectContract(body, userId);
+  }
+
   @Get()
   @Roles('admin', 'manager', 'organizer', 'promoter', 'artist')
   findAll(@Query() pagination: PaginationDto, @Query('status') status?: string, @CurrentUser() user?: any) {

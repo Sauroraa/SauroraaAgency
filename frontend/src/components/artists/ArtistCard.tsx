@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { ArrowRight, MapPin } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { COUNTRIES } from '@/lib/constants';
+import { useI18n } from '@/hooks/useI18n';
 import type { Artist } from '@/types/artist';
 
 function resolveAssetUrl(url?: string | null) {
@@ -20,11 +21,17 @@ function resolveAssetUrl(url?: string | null) {
 }
 
 export function ArtistCard({ artist }: { artist: Artist }) {
+  const { locale } = useI18n();
   const availabilityVariant = {
     available: 'success' as const,
     limited: 'warning' as const,
     unavailable: 'danger' as const,
   };
+  const availabilityLabel = {
+    fr: { available: 'disponible', limited: 'limité', unavailable: 'indisponible', curated: 'Sélection' },
+    en: { available: 'available', limited: 'limited', unavailable: 'unavailable', curated: 'Curated' },
+    nl: { available: 'beschikbaar', limited: 'beperkt', unavailable: 'niet beschikbaar', curated: 'Selectie' },
+  }[locale];
   const galleryImage = artist.media?.find((m) => m.type === 'image')?.url || null;
   const coverImage = resolveAssetUrl(artist.coverImageUrl) || resolveAssetUrl(galleryImage);
 
@@ -48,10 +55,10 @@ export function ArtistCard({ artist }: { artist: Artist }) {
         {/* Top badges */}
         <div className="absolute top-4 left-4 right-4 flex items-center justify-between">
           <Badge variant={availabilityVariant[artist.availability]}>
-            {artist.availability}
+            {availabilityLabel[artist.availability]}
           </Badge>
           {artist.isCurated && (
-            <Badge variant="info">Curated</Badge>
+            <Badge variant="info">{availabilityLabel.curated}</Badge>
           )}
         </div>
 

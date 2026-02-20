@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { COUNTRIES } from '@/lib/constants';
+import { useI18n } from '@/hooks/useI18n';
 import type { Artist } from '@/types/artist';
 
 function resolveAssetUrl(url?: string | null) {
@@ -24,6 +25,7 @@ function resolveAssetUrl(url?: string | null) {
 }
 
 export function ArtistProfileClient({ slug, initialArtist }: { slug: string; initialArtist?: Artist | null }) {
+  const { locale } = useI18n();
   const { data: artist, isLoading } = useQuery<Artist>({
     queryKey: ['artist', slug],
     queryFn: async () => {
@@ -43,7 +45,70 @@ export function ArtistProfileClient({ slug, initialArtist }: { slug: string; ini
     );
   }
 
-  if (!artist) return <div className="text-center py-24">Artist not found</div>;
+  const copy = {
+    fr: {
+      notFound: 'Artiste introuvable',
+      monthlyListeners: 'auditeurs mensuels',
+      about: 'À propos',
+      bioFallback: 'Biographie bientôt disponible.',
+      listen: 'Écouter',
+      tracks: 'Tracks',
+      listenSoundcloud: 'Écouter sur SoundCloud',
+      book: 'Booker',
+      interested: 'Intéressé(e) pour booker cet artiste pour votre événement ?',
+      requestBooking: 'Demander un booking',
+      connect: 'Réseaux',
+      details: 'Détails',
+      availability: 'Disponibilité',
+      basedIn: 'Basé à',
+      genres: 'Genres',
+      available: 'disponible',
+      limited: 'limité',
+      unavailable: 'indisponible',
+    },
+    en: {
+      notFound: 'Artist not found',
+      monthlyListeners: 'monthly listeners',
+      about: 'About',
+      bioFallback: 'Biography coming soon.',
+      listen: 'Listen',
+      tracks: 'Tracks',
+      listenSoundcloud: 'Listen on SoundCloud',
+      book: 'Book',
+      interested: 'Interested in booking this artist for your event?',
+      requestBooking: 'Request Booking',
+      connect: 'Connect',
+      details: 'Details',
+      availability: 'Availability',
+      basedIn: 'Based in',
+      genres: 'Genres',
+      available: 'available',
+      limited: 'limited',
+      unavailable: 'unavailable',
+    },
+    nl: {
+      notFound: 'Artiest niet gevonden',
+      monthlyListeners: 'maandelijkse luisteraars',
+      about: 'Over',
+      bioFallback: 'Biografie binnenkort beschikbaar.',
+      listen: 'Luisteren',
+      tracks: 'Tracks',
+      listenSoundcloud: 'Luister op SoundCloud',
+      book: 'Boeken',
+      interested: 'Interesse om deze artiest te boeken voor je event?',
+      requestBooking: 'Booking aanvragen',
+      connect: 'Connect',
+      details: 'Details',
+      availability: 'Beschikbaarheid',
+      basedIn: 'Gebaseerd in',
+      genres: 'Genres',
+      available: 'beschikbaar',
+      limited: 'beperkt',
+      unavailable: 'niet beschikbaar',
+    },
+  }[locale];
+
+  if (!artist) return <div className="text-center py-24">{copy.notFound}</div>;
 
   const galleryImage = artist.media?.find((m) => m.type === 'image')?.url || null;
   const coverImage = resolveAssetUrl(artist.coverImageUrl) || resolveAssetUrl(galleryImage);
@@ -80,9 +145,9 @@ export function ArtistProfileClient({ slug, initialArtist }: { slug: string; ini
               {artist.city ? `${artist.city}, ` : ''}{COUNTRIES[artist.country] || artist.country}
             </span>
             {artist.monthlyListeners && (
-              <span className="flex items-center gap-1.5">
-                <Music size={16} />
-                {(artist.monthlyListeners / 1000).toFixed(0)}K monthly listeners
+                <span className="flex items-center gap-1.5">
+                  <Music size={16} />
+                {(artist.monthlyListeners / 1000).toFixed(0)}K {copy.monthlyListeners}
               </span>
             )}
           </div>
@@ -92,15 +157,15 @@ export function ArtistProfileClient({ slug, initialArtist }: { slug: string; ini
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
         <div className="lg:col-span-2 space-y-12">
           <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <h2 className="font-display text-2xl font-bold mb-6">About</h2>
+            <h2 className="font-display text-2xl font-bold mb-6">{copy.about}</h2>
             <div className="prose prose-invert max-w-none text-[var(--text-secondary)] leading-relaxed">
-              {artist.bioFull || artist.bioShort || 'Biography coming soon.'}
+              {artist.bioFull || artist.bioShort || copy.bioFallback}
             </div>
           </motion.section>
 
           {artist.spotifyUrl && (
             <section>
-              <h2 className="font-display text-2xl font-bold mb-6">Listen</h2>
+              <h2 className="font-display text-2xl font-bold mb-6">{copy.listen}</h2>
               <div className="rounded-xl overflow-hidden">
                 <iframe
                   src={`https://open.spotify.com/embed/artist/${artist.spotifyUrl.split('/').pop()?.split('?')[0]}`}
@@ -117,10 +182,10 @@ export function ArtistProfileClient({ slug, initialArtist }: { slug: string; ini
 
           {artist.soundcloudUrl && (
             <section>
-              <h2 className="font-display text-2xl font-bold mb-6">Tracks</h2>
+              <h2 className="font-display text-2xl font-bold mb-6">{copy.tracks}</h2>
               <div className="rounded-xl overflow-hidden bg-dark-800 p-6 border border-[var(--border-color)]">
                 <a href={artist.soundcloudUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-aurora-cyan hover:underline">
-                  <ExternalLink size={16} /> Listen on SoundCloud
+                  <ExternalLink size={16} /> {copy.listenSoundcloud}
                 </a>
               </div>
             </section>
@@ -129,20 +194,20 @@ export function ArtistProfileClient({ slug, initialArtist }: { slug: string; ini
 
         <div className="space-y-6">
           <div className="rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] p-6">
-            <h3 className="font-display text-lg font-semibold mb-4">Book {artist.name}</h3>
+            <h3 className="font-display text-lg font-semibold mb-4">{copy.book} {artist.name}</h3>
             <p className="text-sm text-[var(--text-muted)] mb-6">
-              Interested in booking this artist for your event?
+              {copy.interested}
             </p>
             <Link href={`/contact?artist=${artist.slug}`}>
               <Button className="w-full">
                 <Calendar size={16} />
-                Request Booking
+                {copy.requestBooking}
               </Button>
             </Link>
           </div>
 
           <div className="rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] p-6">
-            <h3 className="font-display text-lg font-semibold mb-4">Connect</h3>
+            <h3 className="font-display text-lg font-semibold mb-4">{copy.connect}</h3>
             <div className="space-y-3">
               {artist.instagramUrl && (
                 <a href={artist.instagramUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-sm text-[var(--text-secondary)] hover:text-aurora-cyan transition-colors">
@@ -163,19 +228,23 @@ export function ArtistProfileClient({ slug, initialArtist }: { slug: string; ini
           </div>
 
           <div className="rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] p-6">
-            <h3 className="font-display text-lg font-semibold mb-4">Details</h3>
+            <h3 className="font-display text-lg font-semibold mb-4">{copy.details}</h3>
             <dl className="space-y-3 text-sm">
               <div className="flex justify-between">
-                <dt className="text-[var(--text-muted)]">Availability</dt>
-                <dd><Badge variant={artist.availability === 'available' ? 'success' : artist.availability === 'limited' ? 'warning' : 'danger'}>{artist.availability}</Badge></dd>
+                <dt className="text-[var(--text-muted)]">{copy.availability}</dt>
+                <dd>
+                  <Badge variant={artist.availability === 'available' ? 'success' : artist.availability === 'limited' ? 'warning' : 'danger'}>
+                    {artist.availability === 'available' ? copy.available : artist.availability === 'limited' ? copy.limited : copy.unavailable}
+                  </Badge>
+                </dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-[var(--text-muted)]">Based in</dt>
+                <dt className="text-[var(--text-muted)]">{copy.basedIn}</dt>
                 <dd>{COUNTRIES[artist.country] || artist.country}</dd>
               </div>
               {artist.genres?.length > 0 && (
                 <div className="flex justify-between">
-                  <dt className="text-[var(--text-muted)]">Genres</dt>
+                  <dt className="text-[var(--text-muted)]">{copy.genres}</dt>
                   <dd>{artist.genres.map((g) => g.name).join(', ')}</dd>
                 </div>
               )}

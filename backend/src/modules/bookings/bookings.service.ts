@@ -100,6 +100,64 @@ export class BookingsService {
     return this.submitPublic(dto, ip);
   }
 
+  async createDirectContract(
+    dto: CreateBookingDto & {
+      organizerUserId?: string;
+      quotedAmount?: number;
+      quotePdfUrl?: string;
+      customMessage?: string;
+      expiresInHours?: number;
+      sendEmail?: boolean;
+    },
+    actorId: string,
+  ) {
+    const payload = { ...dto };
+    if (!payload.artistId || !payload.eventName || !payload.eventDate || !payload.eventCity || !payload.eventCountry || !payload.eventType) {
+      throw new BadRequestException('Missing required contract fields');
+    }
+    if (dto.organizerUserId) {
+      const organizer = await this.userRepo.findOne({ where: { id: dto.organizerUserId } });
+      if (!organizer) throw new NotFoundException('Organizer user not found');
+      payload.requesterEmail = organizer.email;
+      payload.requesterName = `${organizer.firstName || ''} ${organizer.lastName || ''}`.trim() || organizer.email;
+      payload.requesterPhone = payload.requesterPhone || organizer.phone || undefined;
+      payload.requesterCompany = payload.requesterCompany || organizer.companyName || undefined;
+    }
+    if (!payload.requesterName || !payload.requesterEmail) {
+      throw new BadRequestException('Requester name and email are required');
+    }
+
+    const booking = await this.submitPublic(payload, '0.0.0.0');
+    booking.status = 'quoted';
+    booking.quoteSentAt = new Date();
+    if (dto.quotedAmount !== undefined) booking.quotedAmount = dto.quotedAmount;
+    if (dto.quotePdfUrl !== undefined) booking.quotePdfUrl = dto.quotePdfUrl;
+    const saved = await this.bookingRepo.save(booking);
+
+    await this.historyRepo.save(this.historyRepo.create({
+      bookingId: saved.id,
+      fromStatus: 'new',
+      toStatus: 'quoted',
+      changedBy: actorId,
+      note: 'Direct contract created by admin',
+    }));
+
+    const token = this.signContractToken(saved.id, saved.requesterEmail, dto.expiresInHours);
+    const appUrl = this.configService.get('APP_URL', 'https://agency.sauroraa.be');
+    const signingUrl = `${appUrl}/contract/${token}`;
+
+    if (dto.sendEmail !== false) {
+      await this.notificationsService.sendContractSignatureRequest(saved, signingUrl, dto.customMessage);
+    }
+
+    return {
+      bookingId: saved.id,
+      referenceCode: saved.referenceCode,
+      signingUrl,
+      status: saved.status,
+    };
+  }
+
   private ensureBookingAccess(booking: Booking, user?: any) {
     if (!user) return;
     if (user.role === 'admin' || user.role === 'manager') return;

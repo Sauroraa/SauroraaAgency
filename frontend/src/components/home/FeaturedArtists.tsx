@@ -6,8 +6,21 @@ import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { staggerContainer, staggerItem } from '@/lib/motion';
 import { publicApi } from '@/lib/api';
+import { COUNTRIES } from '@/lib/constants';
 import type { Artist } from '@/types/artist';
 import { useI18n } from '@/hooks/useI18n';
+
+function resolveAssetUrl(url?: string | null) {
+  if (!url) return null;
+  const trimmed = url.trim();
+  if (!trimmed) return null;
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
+  if (trimmed.startsWith('/')) {
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/+$/, '');
+    if (appUrl) return `${appUrl}${trimmed}`;
+  }
+  return trimmed;
+}
 
 export function FeaturedArtists() {
   const { t } = useI18n();
@@ -51,21 +64,34 @@ export function FeaturedArtists() {
           {artists.map((artist) => (
             <motion.div key={artist.slug} variants={staggerItem}>
               <Link href={`/artists/${artist.slug}`}>
+                {(() => {
+                  const galleryImage = artist.media?.find((m) => m.type === 'image')?.url || null;
+                  const coverImage = resolveAssetUrl(artist.coverImageUrl) || resolveAssetUrl(artist.profileImageUrl) || resolveAssetUrl(galleryImage);
+                  return (
                 <div className="group relative aspect-[3/4] rounded-2xl overflow-hidden bg-dark-800 border border-[var(--border-color)] hover:border-aurora-cyan/30 transition-all duration-500">
-                  {/* Placeholder gradient */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-aurora-cyan/20 via-aurora-violet/10 to-transparent" />
+                  {coverImage ? (
+                    <div
+                      className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
+                      style={{ backgroundImage: `url("${coverImage}")` }}
+                    />
+                  ) : (
+                    <div className="absolute inset-0 bg-gradient-to-br from-aurora-cyan/20 via-aurora-violet/10 to-transparent" />
+                  )}
+                  <div className="absolute inset-0 bg-dark-900/35" />
                   <div className="absolute inset-0 bg-gradient-to-t from-dark-900 via-dark-900/40 to-transparent" />
 
                   <div className="absolute bottom-0 left-0 right-0 p-6">
                     <p className="text-xs uppercase tracking-wider text-aurora-cyan mb-1 font-mono">{artist.genres?.[0]?.name || 'Artist'}</p>
                     <h3 className="font-display text-2xl font-bold mb-1 group-hover:text-aurora-cyan transition-colors">{artist.name}</h3>
-                    <p className="text-sm text-[var(--text-muted)]">{artist.country}</p>
+                    <p className="text-sm text-[var(--text-muted)]">{COUNTRIES[artist.country] || artist.country}</p>
                   </div>
 
                   <div className="absolute top-4 right-4 w-10 h-10 rounded-full border border-white/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-white/5 backdrop-blur-sm">
                     <ArrowRight size={16} />
                   </div>
                 </div>
+                  );
+                })()}
               </Link>
             </motion.div>
           ))}

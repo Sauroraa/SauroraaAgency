@@ -8,10 +8,12 @@ import { ArtistCard } from '@/components/artists/ArtistCard';
 import { ArtistFilters } from '@/components/artists/ArtistFilters';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { staggerContainer, staggerItem } from '@/lib/motion';
+import { useI18n } from '@/hooks/useI18n';
 import type { Artist } from '@/types/artist';
 
 export default function ArtistsPage() {
   const { genre, country, availability, sortBy, search } = useArtistFilterStore();
+  const { locale } = useI18n();
 
   const { data, isLoading } = useQuery({
     queryKey: ['artists', { genre, country, availability, sortBy, search }],
@@ -29,6 +31,26 @@ export default function ArtistsPage() {
   });
 
   const artists: Artist[] = data?.items || [];
+  const copy = {
+    fr: {
+      roster: 'Roster',
+      title: 'Nos artistes',
+      subtitle: "Découvrez notre roster d'artistes électroniques soigneusement sélectionnés.",
+      empty: 'Aucun artiste ne correspond à vos filtres.',
+    },
+    en: {
+      roster: 'Roster',
+      title: 'Our Artists',
+      subtitle: 'Discover our carefully curated roster of electronic music talent.',
+      empty: 'No artists found matching your filters.',
+    },
+    nl: {
+      roster: 'Roster',
+      title: 'Onze artiesten',
+      subtitle: 'Ontdek onze zorgvuldig geselecteerde roster van elektronische artiesten.',
+      empty: 'Geen artiesten gevonden met deze filters.',
+    },
+  }[locale];
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-12">
@@ -37,10 +59,10 @@ export default function ArtistsPage() {
         animate={{ opacity: 1, y: 0 }}
         className="mb-12"
       >
-        <p className="text-sm uppercase tracking-[0.2em] text-aurora-cyan mb-3 font-mono">Roster</p>
-        <h1 className="font-display text-4xl md:text-5xl font-bold mb-4">Our Artists</h1>
+        <p className="text-sm uppercase tracking-[0.2em] text-aurora-cyan mb-3 font-mono">{copy.roster}</p>
+        <h1 className="font-display text-4xl md:text-5xl font-bold mb-4">{copy.title}</h1>
         <p className="text-[var(--text-secondary)] max-w-2xl">
-          Discover our carefully curated roster of electronic music talent.
+          {copy.subtitle}
         </p>
       </motion.div>
 
@@ -68,7 +90,7 @@ export default function ArtistsPage() {
           </motion.div>
         ) : (
           <div className="text-center py-24">
-            <p className="text-[var(--text-muted)] text-lg">No artists found matching your filters.</p>
+            <p className="text-[var(--text-muted)] text-lg">{copy.empty}</p>
           </div>
         )}
       </div>
